@@ -1,0 +1,40 @@
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+comments:
+  CommentOverPrivateFunction:
+    active: false
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+
+complexity:
+  CyclomaticComplexMethod:
+    threshold: 20
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 10
+  TooManyFunctions:
+    active: false
+
+naming:
+  FunctionNaming:
+    active: true
+    functionPattern: '[a-z][a-zA-Z0-9]*'
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Z][A-Za-z0-9]*'
+
+style:
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    maxLineLength: 140
+  ReturnCount:
+    max: 3
+    excludedFunctions: 'equals'

@@ -1,0 +1,112 @@
+# Dependabot configuration for typed-value
+# Automatically updates dependencies in gradle/libs.versions.toml
+#
+# Documentation: https://docs.github.com/en/code-security/dependabot
+
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Paris"
+
+    # Limit concurrent PRs to avoid overwhelming the repository
+    open-pull-requests-limit: 5
+
+    # Group related dependencies to reduce PR noise
+    groups:
+      # Kotlin ecosystem - must be updated together for compatibility
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin*"
+        update-types:
+          - "minor"
+          - "patch"
+
+      # Code quality tools (spotless, detekt)
+      code-quality:
+        patterns:
+          - "com.diffplug.spotless*"
+          - "io.gitlab.arturbosch.detekt*"
+        update-types:
+          - "minor"
+          - "patch"
+
+      # Testing frameworks
+      testing:
+        patterns:
+          - "org.junit.jupiter*"
+          - "io.mockk*"
+          - "com.willowtreeapps.assertk*"
+          - "org.assertj*"
+          - "org.testcontainers*"
+
+      # Spring ecosystem
+      spring:
+        patterns:
+          - "org.springframework*"
+
+      # Publishing plugin
+      publishing:
+        patterns:
+          - "com.vanniktech.maven.publish*"
+
+    # Ignore rules to prevent unwanted updates
+    ignore:
+      # Don't auto-update major versions of critical dependencies
+      - dependency-name: "org.jetbrains.kotlin:*"
+        update-types: ["version-update:semver-major"]
+
+      # Code quality tools - major updates can change formatting
+      - dependency-name: "com.diffplug.spotless:*"
+        update-types: ["version-update:semver-major"]
+
+      - dependency-name: "io.gitlab.arturbosch.detekt:*"
+        update-types: ["version-update:semver-major"]
+
+    # Customize PR labels
+    labels:
+      - "dependencies"
+      - "automated"
+
+    # Customize commit messages to follow project conventions
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  - package-ecosystem: "npm"
+    directory: "/docs"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Paris"
+
+    open-pull-requests-limit: 3
+
+    labels:
+      - "dependencies"
+      - "documentation"
+
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Paris"
+
+    labels:
+      - "dependencies"
+      - "ci"
+
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"

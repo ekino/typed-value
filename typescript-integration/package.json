@@ -1,0 +1,21 @@
+{
+  "name": "typed-value-typescript-integration",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "TypeScript integration tests for @ekino/typed-value library",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ekino/typed-value": "file:../typed-value-core/build/dist/js/productionLibrary"
+  },
+  "devDependencies": {
+    "@vitest/ui": "^2.1.8",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

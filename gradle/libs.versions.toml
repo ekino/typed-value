@@ -1,0 +1,105 @@
+[versions]
+kotlin = "2.2.21"
+kotlinJvm = "2.2.21"
+springBoot = "4.0.0"
+springDependencyManagement = "1.1.7"
+jackson = "3.0.3"
+querydsl = "5.1.0"
+querydslFeign = "7.0"
+springDataElasticsearch = "6.0.0"
+
+# Testing
+junit = "5.10.1"
+mockk = "1.14.6"
+assertk = "0.28.1"
+assertj = "3.27.6"
+testcontainers = "1.20.4"
+testcontainersPostgresql = "2.0.2"
+datafaker = "2.5.3"
+
+# Code quality
+spotless = "8.1.0"
+detekt = "1.23.8"
+
+# Publishing
+gradle-maven-publish-plugin = "0.35.0"
+
+# TypeScript integration
+node-gradle = "7.1.0"
+
+[libraries]
+# Kotlin
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
+kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
+
+# Jackson
+jackson-databind = { module = "tools.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+
+# Spring
+spring-core = { module = "org.springframework:spring-core", version = "6.2.14" }
+spring-context = { module = "org.springframework:spring-context", version = "6.2.14" }
+spring-webmvc = { module = "org.springframework:spring-webmvc", version = "6.2.14" }
+spring-boot-autoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure", version.ref = "springBoot" }
+
+# Spring Boot Starters (for integration tests)
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBoot" }
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "springBoot" }
+spring-boot-starter-data-elasticsearch = { module = "org.springframework.boot:spring-boot-starter-data-elasticsearch", version.ref = "springBoot" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
+spring-boot-starter-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test", version.ref = "springBoot" }
+spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers", version.ref = "springBoot" }
+
+# QueryDSL
+querydsl-core = { module = "com.querydsl:querydsl-core", version.ref = "querydsl" }
+querydsl-jpa = { module = "com.querydsl:querydsl-jpa", version.ref = "querydsl" }
+
+# QueryDSL OpenFeign Fork (for integration tests with kapt)
+querydsl-feign-core = { module = "io.github.openfeign.querydsl:querydsl-core", version.ref = "querydslFeign" }
+querydsl-feign-jpa = { module = "io.github.openfeign.querydsl:querydsl-jpa", version.ref = "querydslFeign" }
+querydsl-feign-apt = { module = "io.github.openfeign.querydsl:querydsl-apt", version.ref = "querydslFeign" }
+
+# Spring Data Elasticsearch
+spring-data-elasticsearch = { module = "org.springframework.data:spring-data-elasticsearch", version.ref = "springDataElasticsearch" }
+
+# JPA / Hibernate
+jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version = "3.2.0" }
+spring-data-jpa = { module = "org.springframework.data:spring-data-jpa", version = "4.0.0" }
+hibernate-core = { module = "org.hibernate.orm:hibernate-core", version = "7.1.8.Final" }
+
+# Testcontainers
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-elasticsearch = { module = "org.testcontainers:elasticsearch", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainersPostgresql" }
+
+# Database
+postgresql = { module = "org.postgresql:postgresql" }
+
+# Test utilities
+datafaker = { module = "net.datafaker:datafaker", version.ref = "datafaker" }
+
+# Testing
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
+assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+
+[plugins]
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlinJvm" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+kotlin-jpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+node-gradle = { id = "com.github.node-gradle.node", version.ref = "node-gradle" }
+gradle-maven-publish-plugin = { id = "com.vanniktech.maven.publish", version.ref = "gradle-maven-publish-plugin" }
+
+[bundles]
+testing = ["junit-jupiter-api", "junit-jupiter-engine", "mockk", "assertk", "kotlin-test"]

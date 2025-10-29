@@ -1,0 +1,197 @@
+# TypedValue - Type-Safe Entity Identifiers for Kotlin
+
+[![GitHub](https://img.shields.io/github/license/ekino/typed-value)](https://github.com/ekino/typed-value/blob/master/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/ekino/typed-value)](https://github.com/ekino/typed-value/stargazers)
+
+A lightweight Kotlin Multiplatform library providing type-safe identifiers for domain entities, preventing accidental ID mixing at compile time.
+
+📖 **[Documentation](https://ekino.github.io/typed-value/)** | 🐙 **[GitHub](https://github.com/ekino/typed-value)**
+
+## Features
+
+- **Kotlin Multiplatform**: JVM, JS, and Native support (core module)
+- **Generic ID Types**: String, Long, Int, UUID, or any `Comparable` type
+- **Type Safety**: Compile-time prevention of mixing IDs from different entities
+- **Framework Integrations** (JVM-only): Jackson, Spring MVC, QueryDSL, Spring Data Elasticsearch
+
+## Modules
+
+| Module | Description | Platforms |
+|--------|-------------|-----------|
+| `typed-value-core` | Core TypedValue interface | JVM, JS, Native |
+| `typed-value-jackson` | Jackson serialization | JVM |
+| `typed-value-spring` | Spring MVC converters | JVM |
+| `typed-value-hibernate` | JPA/Hibernate abstract entities & converters | JVM |
+| `typed-value-querydsl` | QueryDSL support (expressions + Q-classes for Hibernate entities) | JVM |
+| `typed-value-spring-data-elasticsearch` | Elasticsearch mapping | JVM |
+
+## Quick Start
+
+### Installation
+
+```kotlin
+dependencies {
+  implementation("com.ekino.oss:typed-value-core:0.1.0-SNAPSHOT")
+  // Optional integrations
+  implementation("com.ekino.oss:typed-value-jackson:0.1.0-SNAPSHOT")
+  implementation("com.ekino.oss:typed-value-spring:0.1.0-SNAPSHOT")
+}
+```
+
+### Basic Usage
+
+```kotlin
+import com.ekino.oss.typedvalue.*
+
+// Define entities with type-safe IDs
+data class User(val id: TypedString<User>, val name: String)
+data class Product(val id: TypedLong<Product>, val price: BigDecimal)
+data class Order(val id: TypedUuid<Order>, val total: BigDecimal)  // JVM-only
+
+// Create using extension functions
+val userId = "user-123".toTypedString<User>()
+val productId = 42L.toTypedLong<Product>()
+val orderId = UUID.randomUUID().toTypedUuid<Order>()  // JVM-only
+
+// Or using factory methods
+val userId2 = TypedString.of("user-456", User::class)
+val productId2 = TypedValue.typedValueFor(99L, Product::class)
+
+// Type safety prevents mixing IDs
+fun deleteUser(id: TypedString<User>) { /* ... */ }
+deleteUser(userId)     // ✅ Compiles
+deleteUser(productId)  // ❌ Compile error!
+```
+
+### Available Types
+
+| Type | ID Type | Platforms |
+|------|---------|-----------|
+| `TypedString<T>` | String | All |
+| `TypedInt<T>` | Int | All |
+| `TypedLong<T>` | Long | All |
+| `TypedUuid<T>` | UUID | JVM only |
+| `TypedValue<ID, T>` | Any Comparable | All |
+
+### Java Interop (JVM)
+
+```java
+import com.ekino.oss.typedvalue.*;
+
+TypedString<User> userId = TypedValues.typedString("user-123", User.class);
+TypedLong<Product> productId = TypedValues.typedLong(42L, Product.class);
+TypedUuid<Order> orderId = TypedValues.typedUuid(UUID.randomUUID(), Order.class);
+```
+
+## Framework Integrations
+
+### Jackson
+
+```kotlin
+@Configuration
+class JacksonConfig {
+    @Bean
+    fun typedValueModule() = TypedValueModule()
+}
+```
+
+```kotlin
+data class UserDto(val id: TypedString<User>, val name: String)
+
+val json = objectMapper.writeValueAsString(UserDto("user-123".toTypedString(), "Alice"))
+// {"id":"user-123","name":"Alice"}
+```
+
+### Spring MVC
+
+Auto-configured when `typed-value-spring` is on the classpath.
+
+```kotlin
+@GetMapping("/users/{id}")
+fun getUser(@PathVariable id: TypedString<User>): UserDto {
+    return userService.findById(id)
+}
+```
+
+### Hibernate (JPA)
+
+```kotlin
+// Use abstract entity classes for automatic equals/hashCode
+@Entity
+class User : AbstractUuidEntity<User>(User::class) {
+    var name: String? = null
+}
+
+// Or use HibernateEntityUtils for custom entities
+@Entity
+class Product {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private var _id: Long? = null
+
+    @get:Transient
+    var id: TypedLong<Product>?
+        get() = _id?.toTypedLong()
+        set(value) { _id = value?.value }
+
+    override fun equals(other: Any?) = HibernateEntityUtils.entityEquals(this, other) { it.id }
+    override fun hashCode() = HibernateEntityUtils.entityHashCode(this)
+}
+```
+
+### QueryDSL
+
+```kotlin
+val qUser = QUser.user
+val userIdExpr = qUser.typedValueExpressionOf { it._id }
+
+queryFactory.selectFrom(qUser)
+    .where(userIdExpr.eq(userId))
+    .fetch()
+```
+
+### Spring Data Elasticsearch
+
+```kotlin
+@Configuration
+class ElasticsearchConfig : ElasticsearchConfigurationSupport() {
+    @Bean
+    override fun elasticsearchMappingContext() = TypedValueElasticsearchMappingContext()
+}
+```
+
+```kotlin
+@Document(indexName = "users")
+data class UserDocument(
+    val id: TypedString<User>,
+    val friendIds: List<TypedString<User>>  // Collections supported (Lists only)
+)
+```
+
+## Utility Methods
+
+```kotlin
+val userId = "user-123".toTypedString<User>()
+
+// Type checking
+userId.isAboutType<User>()  // true
+
+// Safe casting
+val casted: TypedString<User>? = someId.takeIfAboutType<String, User>()
+
+// Sorting
+val sorted = listOf(userId1, userId2, userId3).sorted()
+```
+
+## Development
+
+```bash
+./gradlew build                    # Build all
+./gradlew test                     # Run all tests
+./gradlew spotlessApply            # Format code
+./gradlew typed-value-core:jvmTest # Test JVM only
+./gradlew typed-value-core:jsTest  # Test JS only
+```
+
+## License
+
+Copyright © 2025 Ekino
