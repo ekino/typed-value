@@ -1,7 +1,11 @@
 # TypedValue - Type-Safe Entity Identifiers for Kotlin
 
-[![GitHub](https://img.shields.io/github/license/ekino/typed-value)](https://github.com/ekino/typed-value/blob/master/LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/ekino/typed-value)](https://github.com/ekino/typed-value/stargazers)
+[![GitHub Actions](https://github.com/ekino/typed-value/workflows/Build%20and%20Test/badge.svg)](https://github.com/ekino/typed-value/actions)
+[![Maven Central](https://img.shields.io/maven-central/v/com.ekino.oss/typed-value-core)](https://central.sonatype.com/search?q=com.ekino.oss.typed-value)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Java 21](https://img.shields.io/badge/Java-21-orange)](https://openjdk.java.net/projects/jdk/21/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.2.21-purple)](https://kotlinlang.org/)
+[![Multiplatform](https://img.shields.io/badge/Multiplatform-JVM%20|%20JS%20|%20Native-blue)](https://kotlinlang.org/docs/multiplatform.html)
 
 A lightweight Kotlin Multiplatform library providing type-safe identifiers for domain entities, preventing accidental ID mixing at compile time.
 
