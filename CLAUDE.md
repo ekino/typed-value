@@ -4,11 +4,17 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 ## Project Overview
 
-**typed-value** is a Kotlin Multiplatform library providing type-safe entity identifiers with framework integrations. It's a multi-module Gradle project designed for reusability and minimal coupling.
+**Typed-Value** is a Kotlin Multiplatform library providing type-safe value wrappers with framework integrations. It prevents mixing incompatible values (IDs, quantities, money, etc.) at compile time. It's a multi-module Gradle project designed for reusability and minimal coupling.
+
+**Use Cases:**
+- Type-safe identifiers (User ID vs Product ID)
+- Type-safe quantities (bananas vs apples)
+- Type-safe money (cents vs euros)
+- Any value that should not be mixed with others of the same primitive type
 
 **Key Design Principles:**
 - **Multiplatform Core**: JVM, JS, and Native support
-- Generic ID types (not just String)
+- Generic value types (String, Long, Int, UUID, or any Comparable)
 - Zero dependencies in core module
 - Framework integrations as optional JVM-only modules
 - Kotlin-first with Java interoperability

@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'typed-value',
-  description: 'Type-safe entity identifiers for Kotlin Multiplatform',
+  title: 'Typed-Value',
+  description: 'Type-safe identifiers for Kotlin Multiplatform',
   base: '/typed-value/',
 
   head: [
@@ -10,7 +10,7 @@ export default defineConfig({
   ],
 
   themeConfig: {
-    siteTitle: 'typed-value',
+    siteTitle: 'Typed-Value',
 
     nav: [
       { text: 'Home', link: '/' },

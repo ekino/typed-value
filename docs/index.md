@@ -2,9 +2,9 @@
 layout: home
 
 hero:
-  name: typed-value
-  text: Type-safe Entity Identifiers
-  tagline: Kotlin Multiplatform library for type-safe IDs that prevent mixing up identifiers at compile time
+  name: Typed-Value
+  text: Type-safe Values
+  tagline: Kotlin Multiplatform library that prevents mixing incompatible values at compile time
   actions:
     - theme: brand
       text: Get Started
@@ -16,7 +16,7 @@ hero:
 features:
   - icon: 🛡️
     title: Type Safety
-    details: Compile-time prevention of ID mixing. Never accidentally pass a User ID where a Product ID is expected.
+    details: Compile-time prevention of value mixing. Never accidentally pass a User ID where a Product ID is expected, or mix up quantities.
   - icon: 🌍
     title: Multiplatform
     details: Full support for JVM, JavaScript, and Native platforms. Share your domain model across all targets.
@@ -27,8 +27,8 @@ features:
     title: Framework Ready
     details: Out-of-the-box integrations for Jackson, Spring MVC, QueryDSL, JPA, and Elasticsearch.
   - icon: 🔢
-    title: Flexible ID Types
-    details: Support for String, Long, Int, UUID, and any custom Comparable type as identifiers.
+    title: Flexible Value Types
+    details: Support for String, Long, Int, UUID, and any custom Comparable type. Use for IDs, quantities, money, measurements, and more.
   - icon: ✨
     title: Kotlin-First
     details: Idiomatic Kotlin API with extension functions, reified generics, and full Java interoperability.
@@ -40,27 +40,41 @@ import { data as v } from './.vitepress/versions.data'
 
 ## The Problem
 
-In any application with multiple entities, mixing up IDs is a common source of bugs:
+In any application, mixing up values of the same primitive type is a common source of bugs:
 
 ```kotlin
-// Classic bug: passing wrong ID type
+// Classic bug: passing wrong value
 fun getOrder(orderId: String): Order { ... }
 fun getUser(userId: String): User { ... }
 
 val userId = "user-123"
 val order = getOrder(userId) // Compiles, but wrong!
+
+// Another classic bug: mixing quantities
+fun addToCart(productId: Long, quantity: Int) { ... }
+addToCart(quantity = 5, productId = 42) // Oops, swapped arguments!
 ```
 
 ## The Solution
 
-With **typed-value**, the compiler catches these mistakes:
+With **Typed-Value**, the compiler catches these mistakes:
 
 ```kotlin
+// Type-safe identifiers
 fun getOrder(orderId: TypedString<Order>): Order { ... }
 fun getUser(userId: TypedString<User>): User { ... }
 
 val userId = "user-123".toTypedString<User>()
 val order = getOrder(userId) // Compilation error!
+
+// Type-safe quantities
+class Banana
+class Apple
+val bananas = 5.toTypedInt<Banana>()
+val apples = 3.toTypedInt<Apple>()
+
+fun addBananas(count: TypedInt<Banana>) { ... }
+addBananas(apples) // Compilation error!
 ```
 
 ## Quick Start
@@ -87,25 +101,32 @@ dependencies {
 ```
 :::
 
-Then define your typed IDs:
+Then define your typed values:
 
 ```kotlin
 import com.ekino.oss.typedvalue.*
 
-// Define your entities
+// Type-safe identifiers
 class User
 class Product
-class Order
-
-// Create type-safe IDs
 val userId = "user-123".toTypedString<User>()
 val productId = 42L.toTypedLong<Product>()
-val orderId = UUID.randomUUID().toTypedUuid<Order>() // JVM only
+
+// Type-safe quantities
+class Banana
+class Apple
+val bananas = 5.toTypedInt<Banana>()
+val apples = 3.toTypedInt<Apple>()
+
+// Type-safe money
+class Cents
+val price = 1999L.toTypedLong<Cents>()
 
 // Use in your domain model
-data class UserDto(
-    val id: TypedString<User>,
-    val name: String
+data class CartItem(
+    val productId: TypedLong<Product>,
+    val quantity: TypedInt<Product>,
+    val priceInCents: TypedLong<Cents>
 )
 ```
 

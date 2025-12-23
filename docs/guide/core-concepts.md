@@ -15,15 +15,15 @@ open class TypedValue<VALUE : Comparable<VALUE>, T : Any>(
 
 ### Type Parameters
 
-- **VALUE : Comparable\<VALUE\>**: The raw ID type (String, Long, Int, UUID, or any Comparable)
-- **T : Any**: The entity type this identifier represents
+- **VALUE : Comparable\<VALUE\>**: The raw value type (String, Long, Int, UUID, or any Comparable)
+- **T : Any**: The marker type this value is tagged with (entity, quantity type, money type, etc.)
 
 ### Properties
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `value` | `VALUE` | The underlying identifier (e.g., `"user-123"`, `42L`, UUID) |
-| `type` | `KClass<out T>` | Runtime type information of the entity |
+| `value` | `VALUE` | The underlying value (e.g., `"user-123"`, `42L`, `5`) |
+| `type` | `KClass<out T>` | Runtime type information of the marker type |
 
 ### Override Methods
 
@@ -40,7 +40,7 @@ All convenience types (`TypedString`, `TypedLong`, etc.) extend this class direc
 
 ### typedValueFor
 
-Creates a TypedValue from an identifier value and entity type.
+Creates a TypedValue from a raw value and marker type.
 
 ```kotlin
 fun <ID : Comparable<ID>, T : Any> typedValueFor(
@@ -52,12 +52,12 @@ fun <ID : Comparable<ID>, T : Any> typedValueFor(
 **Example:**
 ```kotlin
 val userId = TypedValue.typedValueFor("user-123", User::class)
-val productId = TypedValue.typedValueFor(42L, Product::class)
+val bananaCount = TypedValue.typedValueFor(5, Banana::class)
 ```
 
 ### typedValueOrNullFor
 
-Creates a TypedValue from a nullable identifier, returning null if the value is null.
+Creates a TypedValue from a nullable value, returning null if the value is null.
 
 ```kotlin
 fun <ID : Comparable<ID>, T : Any> typedValueOrNullFor(
@@ -74,7 +74,7 @@ val userId: TypedString<User>? = TypedValue.typedValueOrNullFor(nullableId, User
 
 ### typedValueBuilderFor
 
-Returns a function that builds TypedValues for a specific entity type. Useful for mapping collections.
+Returns a function that builds TypedValues for a specific marker type. Useful for mapping collections.
 
 ```kotlin
 fun <ID : Comparable<ID>, T : Any> typedValueBuilderFor(
@@ -91,9 +91,9 @@ val userIds = rawIds.map(toUserId)
 val userIds = rawIds.map(TypedValue.typedValueBuilderFor(User::class))
 ```
 
-### rawIds
+### rawValues
 
-Extracts the underlying identifier values from a collection of TypedValues.
+Extracts the underlying raw values from a collection of TypedValues.
 
 ```kotlin
 fun <ID : Comparable<ID>> rawIds(
@@ -126,7 +126,7 @@ val productId = 42L.toTypedValueFor<Long, Product>()
 
 ### isAboutType
 
-Checks if this TypedValue represents an identifier for the specified entity type. Uses exact type matching (not inheritance).
+Checks if this TypedValue is tagged with the specified marker type. Uses exact type matching (not inheritance).
 
 ```kotlin
 inline fun <reified T : Any> TypedValue<*, *>.isAboutType(): Boolean
@@ -156,9 +156,9 @@ val userId: TypedValue<String, User>? = someId.takeIfAboutType<String, User>()
 userId?.let { processUser(it) }
 ```
 
-### toRawIds (Collection)
+### toRawValues (Collection)
 
-Extracts the underlying identifier values from a collection of TypedValues.
+Extracts the underlying raw values from a collection of TypedValues.
 
 ```kotlin
 fun <ID : Comparable<ID>> Collection<TypedValue<ID, *>>.toRawIds(): List<ID>

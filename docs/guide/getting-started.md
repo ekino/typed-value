@@ -4,7 +4,7 @@ import { data as v } from '../.vitepress/versions.data'
 
 # Getting Started
 
-This guide will help you add typed-value to your project and start using type-safe identifiers.
+This guide will help you add typed-value to your project and start using type-safe values.
 
 ## Installation
 
@@ -52,43 +52,52 @@ dependencies {
 
 ## Basic Usage
 
-### 1. Define Your Entities
+### 1. Define Your Types
 
-First, define the entity classes that will be referenced by your typed IDs:
+First, define the marker classes that will tag your values:
 
 ```kotlin
+// For identifiers
 class User
 class Product
 class Order
+
+// For quantities
+class Banana
+class Apple
+
+// For money
+class Cents
+class Euros
 ```
 
 ::: tip
-These can be empty marker classes, data classes, or full entity implementations. The type parameter is only used at compile time.
+These can be empty marker classes, data classes, or full entity implementations. The type parameter is only used at compile time for type checking.
 :::
 
-### 2. Create Typed IDs
+### 2. Create Typed Values
 
-Use extension functions to create typed IDs from raw values:
+Use extension functions to create typed values from raw primitives:
 
 ```kotlin
 import com.ekino.oss.typedvalue.*
 
-// String IDs
+// Type-safe identifiers
 val userId = "user-123".toTypedString<User>()
-
-// Long IDs (e.g., database auto-increment)
 val productId = 42L.toTypedLong<Product>()
+val orderId = UUID.randomUUID().toTypedUuid<Order>() // JVM only
 
-// Int IDs
-val categoryId = 5.toTypedInt<Category>()
+// Type-safe quantities
+val bananas = 5.toTypedInt<Banana>()
+val apples = 3.toTypedInt<Apple>()
 
-// UUID IDs (JVM only)
-val orderId = UUID.randomUUID().toTypedUuid<Order>()
+// Type-safe money
+val priceInCents = 1999L.toTypedLong<Cents>()
 ```
 
 ### 3. Use in Domain Models
 
-Define your data classes with typed IDs:
+Define your data classes with typed values:
 
 ```kotlin
 data class UserDto(
@@ -97,37 +106,48 @@ data class UserDto(
     val email: String
 )
 
-data class OrderDto(
-    val id: TypedUuid<Order>,
-    val userId: TypedString<User>,
-    val productIds: List<TypedLong<Product>>
+data class CartItem(
+    val productId: TypedLong<Product>,
+    val quantity: TypedInt<Product>,
+    val priceInCents: TypedLong<Cents>
+)
+
+data class FruitBasket(
+    val bananas: TypedInt<Banana>,
+    val apples: TypedInt<Apple>
 )
 ```
 
 ### 4. Enjoy Type Safety
 
-The compiler now prevents mixing up IDs:
+The compiler now prevents mixing up values:
 
 ```kotlin
+// Can't mix different IDs
 fun findUser(id: TypedString<User>): User? { ... }
-fun findProduct(id: TypedLong<Product>): Product? { ... }
-
 val userId = "user-123".toTypedString<User>()
 val productId = 42L.toTypedLong<Product>()
 
-findUser(userId)     // OK
-findUser(productId)  // Compilation error!
-findProduct(userId)  // Compilation error!
+findUser(userId)     // ✅ OK
+findUser(productId)  // ❌ Compilation error!
+
+// Can't mix different quantities
+fun addBananas(count: TypedInt<Banana>) { ... }
+val bananas = 5.toTypedInt<Banana>()
+val apples = 3.toTypedInt<Apple>()
+
+addBananas(bananas)  // ✅ OK
+addBananas(apples)   // ❌ Compilation error!
 ```
 
 ## Choosing the Right Type
 
-| Type | Use Case | Example |
-|------|----------|---------|
-| `TypedString<T>` | UUIDs as strings, external IDs, slugs | `"user-abc123"` |
-| `TypedLong<T>` | Database auto-increment, large sequences | `1234567890L` |
-| `TypedInt<T>` | Small sequences, enum-like IDs | `42` |
-| `TypedUuid<T>` | Native UUID support (JVM only) | `UUID.randomUUID()` |
+| Type | Value Type | Use Cases | Example |
+|------|------------|-----------|---------|
+| `TypedString<T>` | String | IDs, emails, codes, slugs | `"user-abc123"` |
+| `TypedLong<T>` | Long | Large IDs, money (cents), timestamps | `1234567890L` |
+| `TypedInt<T>` | Int | Quantities, small counts, indexes | `42` |
+| `TypedUuid<T>` | UUID | Distributed IDs (JVM only) | `UUID.randomUUID()` |
 
 ## Adding Framework Integrations
 

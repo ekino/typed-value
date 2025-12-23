@@ -1,4 +1,4 @@
-# TypedValue - Type-Safe Entity Identifiers for Kotlin
+# Typed-Value - Type-Safe Values for Kotlin
 
 [![GitHub Actions](https://github.com/ekino/typed-value/workflows/Build%20and%20Test/badge.svg)](https://github.com/ekino/typed-value/actions)
 [![Maven Central](https://img.shields.io/maven-central/v/com.ekino.oss/typed-value-core)](https://central.sonatype.com/search?q=com.ekino.oss.typed-value)
@@ -7,15 +7,15 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.21-purple)](https://kotlinlang.org/)
 [![Multiplatform](https://img.shields.io/badge/Multiplatform-JVM%20|%20JS%20|%20Native-blue)](https://kotlinlang.org/docs/multiplatform.html)
 
-A lightweight Kotlin Multiplatform library providing type-safe identifiers for domain entities, preventing accidental ID mixing at compile time.
+A lightweight Kotlin Multiplatform library providing type-safe wrappers for primitive values, preventing accidental mixing of incompatible values at compile time.
 
 📖 **[Documentation](https://ekino.github.io/typed-value/)** | 🐙 **[GitHub](https://github.com/ekino/typed-value)**
 
 ## Features
 
 - **Kotlin Multiplatform**: JVM, JS, and Native support (core module)
-- **Generic ID Types**: String, Long, Int, UUID, or any `Comparable` type
-- **Type Safety**: Compile-time prevention of mixing IDs from different entities
+- **Flexible Value Types**: String, Long, Int, UUID, or any `Comparable` type
+- **Type Safety**: Compile-time prevention of mixing incompatible values
 - **Framework Integrations** (JVM-only): Jackson, Spring MVC, QueryDSL, Spring Data Elasticsearch
 
 ## Modules
@@ -47,35 +47,43 @@ dependencies {
 ```kotlin
 import com.ekino.oss.typedvalue.*
 
-// Define entities with type-safe IDs
+// Type-safe identifiers
 data class User(val id: TypedString<User>, val name: String)
 data class Product(val id: TypedLong<Product>, val price: BigDecimal)
-data class Order(val id: TypedUuid<Order>, val total: BigDecimal)  // JVM-only
+
+// Type-safe quantities
+class Banana
+class Apple
+val bananas = 5.toTypedInt<Banana>()
+val apples = 3.toTypedInt<Apple>()
+
+// Type-safe money
+class Cents
+val price = 1999L.toTypedLong<Cents>()
 
 // Create using extension functions
 val userId = "user-123".toTypedString<User>()
 val productId = 42L.toTypedLong<Product>()
-val orderId = UUID.randomUUID().toTypedUuid<Order>()  // JVM-only
 
-// Or using factory methods
-val userId2 = TypedString.of("user-456", User::class)
-val productId2 = TypedValue.typedValueFor(99L, Product::class)
-
-// Type safety prevents mixing IDs
+// Type safety prevents mixing values
 fun deleteUser(id: TypedString<User>) { /* ... */ }
 deleteUser(userId)     // ✅ Compiles
 deleteUser(productId)  // ❌ Compile error!
+
+fun addBananas(count: TypedInt<Banana>) { /* ... */ }
+addBananas(bananas)    // ✅ Compiles
+addBananas(apples)     // ❌ Compile error!
 ```
 
 ### Available Types
 
-| Type | ID Type | Platforms |
-|------|---------|-----------|
-| `TypedString<T>` | String | All |
-| `TypedInt<T>` | Int | All |
-| `TypedLong<T>` | Long | All |
-| `TypedUuid<T>` | UUID | JVM only |
-| `TypedValue<ID, T>` | Any Comparable | All |
+| Type | Value Type | Platforms | Use Cases |
+|------|------------|-----------|-----------|
+| `TypedString<T>` | String | All | IDs, emails, codes |
+| `TypedInt<T>` | Int | All | Quantities, small counts |
+| `TypedLong<T>` | Long | All | Large IDs, money (cents) |
+| `TypedUuid<T>` | UUID | JVM only | Distributed IDs |
+| `TypedValue<V, T>` | Any Comparable | All | Custom types |
 
 ### Java Interop (JVM)
 
