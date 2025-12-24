@@ -6,10 +6,15 @@ export default defineConfig({
   base: '/typed-value/',
 
   head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/typed-value/favicon.svg' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/typed-value/favicon/favicon.svg' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/typed-value/favicon/favicon-96x96.png' }],
+    ['link', { rel: 'shortcut icon', href: '/typed-value/favicon/favicon.ico' }],
+    ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/typed-value/favicon/apple-touch-icon.png' }],
+    ['link', { rel: 'manifest', href: '/typed-value/favicon/site.webmanifest' }],
   ],
 
   themeConfig: {
+    logo: '/logo.png',
     siteTitle: 'Typed-Value',
 
     nav: [

@@ -5,6 +5,9 @@ hero:
   name: Typed-Value
   text: Type-safe Values
   tagline: Kotlin Multiplatform library that prevents mixing incompatible values at compile time
+  image:
+    src: /logo.png
+    alt: Typed-Value Logo
   actions:
     - theme: brand
       text: Get Started

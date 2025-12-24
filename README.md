@@ -1,11 +1,18 @@
-# Typed-Value - Type-Safe Values for Kotlin
+<p align="center">
+  <img src="logo.png" alt="Typed-Value Logo" width="200">
+</p>
 
-[![GitHub Actions](https://github.com/ekino/typed-value/workflows/Build%20and%20Test/badge.svg)](https://github.com/ekino/typed-value/actions)
-[![Maven Central](https://img.shields.io/maven-central/v/com.ekino.oss/typed-value-core)](https://central.sonatype.com/search?q=com.ekino.oss.typed-value)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Java 21](https://img.shields.io/badge/Java-21-orange)](https://openjdk.java.net/projects/jdk/21/)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.2.21-purple)](https://kotlinlang.org/)
-[![Multiplatform](https://img.shields.io/badge/Multiplatform-JVM%20|%20JS%20|%20Native-blue)](https://kotlinlang.org/docs/multiplatform.html)
+<h1 align="center">Typed-Value</h1>
+<p align="center">Type-Safe Values for Kotlin</p>
+
+<p align="center">
+  <a href="https://github.com/ekino/typed-value/actions"><img src="https://github.com/ekino/typed-value/workflows/Build%20and%20Test/badge.svg" alt="GitHub Actions"></a>
+  <a href="https://central.sonatype.com/search?q=com.ekino.oss.typed-value"><img src="https://img.shields.io/maven-central/v/com.ekino.oss/typed-value-core" alt="Maven Central"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://openjdk.java.net/projects/jdk/21/"><img src="https://img.shields.io/badge/Java-21-orange" alt="Java 21"></a>
+  <a href="https://kotlinlang.org/"><img src="https://img.shields.io/badge/Kotlin-2.2.21-purple" alt="Kotlin"></a>
+  <a href="https://kotlinlang.org/docs/multiplatform.html"><img src="https://img.shields.io/badge/Multiplatform-JVM%20|%20JS%20|%20Native-blue" alt="Multiplatform"></a>
+</p>
 
 A lightweight Kotlin Multiplatform library providing type-safe wrappers for primitive values, preventing accidental mixing of incompatible values at compile time.
 
