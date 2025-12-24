@@ -852,7 +852,7 @@ When ready to release:
 
 1. Update version in `build.gradle.kts`
 2. Update CHANGELOG.md
-3. Tag release: `git tag v0.1.0`
+3. Tag release: `git tag v1.x.x`
 4. Build artifacts: `./gradlew build`
 5. Publish to Maven Central (setup required)
 
