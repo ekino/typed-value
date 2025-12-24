@@ -52,7 +52,7 @@ jobs:
           retention-days: 7
 
       - name: Publish test report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2
         # Skip for Dependabot PRs due to restricted permissions
         if: always() && github.actor != 'dependabot[bot]'
         with:
