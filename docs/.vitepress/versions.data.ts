@@ -1,7 +1,7 @@
 export default {
   load() {
     return {
-      typedValue: '0.1.0-rc.1',
+      typedValue: '1.0.0',
       kotlin: '2.0.0',
     }
   }
