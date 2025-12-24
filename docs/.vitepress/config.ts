@@ -74,7 +74,7 @@ export default defineConfig({
     },
 
     editLink: {
-      pattern: 'https://github.com/ekino/typed-value/edit/master/docs/:path',
+      pattern: 'https://github.com/ekino/typed-value/edit/main/docs/:path',
       text: 'Edit this page on GitHub'
     }
   }
