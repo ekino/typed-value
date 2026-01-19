@@ -10,7 +10,7 @@
   <a href="https://central.sonatype.com/search?q=com.ekino.oss.typed-value"><img src="https://img.shields.io/maven-central/v/com.ekino.oss/typed-value-core" alt="Maven Central"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://openjdk.java.net/projects/jdk/21/"><img src="https://img.shields.io/badge/Java-21-orange" alt="Java 21"></a>
-  <a href="https://kotlinlang.org/"><img src="https://img.shields.io/badge/Kotlin-2.2.21-purple" alt="Kotlin"></a>
+  <a href="https://kotlinlang.org/"><img src="https://img.shields.io/badge/Kotlin-2.3.0-purple" alt="Kotlin"></a>
   <a href="https://kotlinlang.org/docs/multiplatform.html"><img src="https://img.shields.io/badge/Multiplatform-JVM%20|%20JS%20|%20Native-blue" alt="Multiplatform"></a>
 </p>
 
