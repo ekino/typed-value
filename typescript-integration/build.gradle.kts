@@ -9,7 +9,7 @@ plugins {
 // Node.js/pnpm configuration
 node {
   version.set("20.10.0")
-  pnpmVersion.set("8.15.0")
+  pnpmVersion.set("10.28.0")
   download.set(true)
   workDir.set(file("${project.projectDir}/.cache/nodejs"))
   pnpmWorkDir.set(file("${project.projectDir}/.cache/pnpm"))
@@ -21,10 +21,11 @@ val jsPackageDir =
 
 // Configure the built-in pnpmInstall task
 tasks.named("pnpmInstall") {
-  // Ensure JS package exists before installing (both Node and Browser distributions write to the same dir)
+  // Ensure JS package exists with phantom types before installing
   dependsOn(
     ":typed-value-core:jsNodeProductionLibraryDistribution",
-    ":typed-value-core:jsBrowserProductionLibraryDistribution"
+    ":typed-value-core:jsBrowserProductionLibraryDistribution",
+    ":typed-value-core:addPhantomTypes"
   )
 
   inputs.file("package.json")

@@ -89,7 +89,7 @@ class HibernateEntityUtilsTest {
     fun `should return true for same instance`() {
       val entity = TestEntity("123")
 
-      val result = HibernateEntityUtils.entityEquals(entity, entity) { (it as TestEntity).id }
+      val result = HibernateEntityUtils.entityEquals(entity, entity) { it.id }
 
       assertThat(result).isTrue()
     }
@@ -99,7 +99,7 @@ class HibernateEntityUtilsTest {
       val entity = TestEntity("123")
       every { HibernateProxy.extractLazyInitializer(entity) } returns null
 
-      val result = HibernateEntityUtils.entityEquals(entity, null) { (it as TestEntity).id }
+      val result = HibernateEntityUtils.entityEquals(entity, null) { it.id }
 
       assertThat(result).isFalse()
     }
@@ -111,7 +111,7 @@ class HibernateEntityUtilsTest {
       every { HibernateProxy.extractLazyInitializer(entity1) } returns null
       every { HibernateProxy.extractLazyInitializer(entity2) } returns null
 
-      val result = HibernateEntityUtils.entityEquals(entity1, entity2) { (it as TestEntity).id }
+      val result = HibernateEntityUtils.entityEquals(entity1, entity2) { it.id }
 
       assertThat(result).isFalse()
     }
@@ -123,7 +123,7 @@ class HibernateEntityUtilsTest {
       every { HibernateProxy.extractLazyInitializer(entity1) } returns null
       every { HibernateProxy.extractLazyInitializer(entity2) } returns null
 
-      val result = HibernateEntityUtils.entityEquals(entity1, entity2) { (it as TestEntity).id }
+      val result = HibernateEntityUtils.entityEquals(entity1, entity2) { it.id }
 
       assertThat(result).isFalse()
     }
@@ -135,7 +135,7 @@ class HibernateEntityUtilsTest {
       every { HibernateProxy.extractLazyInitializer(entity1) } returns null
       every { HibernateProxy.extractLazyInitializer(entity2) } returns null
 
-      val result = HibernateEntityUtils.entityEquals(entity1, entity2) { (it as TestEntity).id }
+      val result = HibernateEntityUtils.entityEquals(entity1, entity2) { it.id }
 
       assertThat(result).isTrue()
     }
@@ -147,7 +147,7 @@ class HibernateEntityUtilsTest {
       every { HibernateProxy.extractLazyInitializer(entity1) } returns null
       every { HibernateProxy.extractLazyInitializer(entity2) } returns null
 
-      val result = HibernateEntityUtils.entityEquals(entity1, entity2) { (it as TestEntity).id }
+      val result = HibernateEntityUtils.entityEquals(entity1, entity2) { it.id }
 
       assertThat(result).isFalse()
     }

@@ -33,6 +33,7 @@ import com.ekino.oss.typedvalue.toTypedUuid
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import java.util.UUID
+import kotlin.jvm.optionals.getOrNull
 import kotlin.test.Test
 import net.datafaker.Faker
 import org.junit.jupiter.api.BeforeAll
@@ -154,7 +155,7 @@ class QueryDslTests : AbstractIntegrationTest() {
 
     @Test
     fun `should find person by someUuidRef`() {
-      val person = personRepository.getReferenceById(personIds.random())
+      val person = personRepository.findById(personIds.random()).getOrNull()!!
       val result =
         queryFactory
           .select(QPerson.person)
