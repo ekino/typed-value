@@ -67,7 +67,7 @@ spring-data-elasticsearch = { module = "org.springframework.data:spring-data-ela
 # JPA / Hibernate
 jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version = "3.2.0" }
 spring-data-jpa = { module = "org.springframework.data:spring-data-jpa", version = "4.0.1" }
-hibernate-core = { module = "org.hibernate.orm:hibernate-core", version = "7.2.0.Final" }
+hibernate-core = { module = "org.hibernate.orm:hibernate-core", version = "7.2.1.Final" }
 
 # Testcontainers
 testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
