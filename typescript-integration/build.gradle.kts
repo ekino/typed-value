@@ -9,7 +9,7 @@ plugins {
 // Node.js/pnpm configuration
 node {
   version.set("20.10.0")
-  pnpmVersion.set("8.15.0")
+  pnpmVersion.set("10.28.0")
   download.set(true)
   workDir.set(file("${project.projectDir}/.cache/nodejs"))
   pnpmWorkDir.set(file("${project.projectDir}/.cache/pnpm"))
