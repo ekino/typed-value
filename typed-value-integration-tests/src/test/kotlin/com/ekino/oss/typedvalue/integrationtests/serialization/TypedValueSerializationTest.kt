@@ -3,16 +3,23 @@
  */
 package com.ekino.oss.typedvalue.integrationtests.serialization
 
+import assertk.assertFailure
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
+import assertk.assertions.messageContains
 import com.ekino.oss.typedvalue.TypedString
 import com.ekino.oss.typedvalue.TypedUuid
 import com.ekino.oss.typedvalue.integrationtests.AbstractIntegrationTest
+import com.ekino.oss.typedvalue.integrationtests.model.MyId
+import com.ekino.oss.typedvalue.integrationtests.model.Person
+import com.ekino.oss.typedvalue.integrationtests.model.TypedId
 import com.ekino.oss.typedvalue.toTypedUuid
 import java.util.UUID
+import kotlin.reflect.KClass
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import tools.jackson.core.type.TypeReference
@@ -25,16 +32,22 @@ import tools.jackson.databind.ObjectMapper
  * Spring Boot's ObjectMapper to provide seamless JSON handling for:
  * - [TypedUuid] - UUID-based typed identifiers
  * - [TypedString] - String-based typed identifiers
- * - Custom TypedValue subclasses (e.g., [MyId])
+ * - Custom TypedValue subclasses with registration (e.g., [MyId], [TypedId])
+ * - Unregistered custom types (demonstrates type erasure issue)
  *
  * ## Configuration
  *
- * The TypedValueModule must be registered as a Spring bean:
+ * The TypedValueModule must be registered as a Spring bean. For custom TypedValue types, register
+ * them to ensure proper runtime type reconstruction:
  * ```kotlin
  * @Configuration
  * class JacksonConfiguration {
  *   @Bean
- *   fun typedValueModule() = TypedValueModule()
+ *   fun typedValueModule() = TypedValueModule().apply {
+ *     registerCustomTypedValue<MyId<*>, String> { value, entityKClass ->
+ *       MyId(value, entityKClass)
+ *     }
+ *   }
  * }
  * ```
  *
@@ -76,14 +89,23 @@ class TypedValueSerializationTest : AbstractIntegrationTest() {
 
   @Autowired private lateinit var objectMapper: ObjectMapper
 
-  /** Example of a custom TypedString subclass for domain-specific IDs. */
-  class MyId(id: String) : TypedString<MyId>(id, MyId::class)
+  /**
+   * Unregistered custom type to demonstrate type erasure.
+   *
+   * Without registration, deserialized instances will be TypedString at runtime, not
+   * UnregisteredId.
+   */
+  class UnregisteredId<T : Any>(id: String, type: KClass<T>) : TypedString<T>(id, type)
 
-  data class PersonDto2(val name: String? = null, val someId: MyId)
+  data class PersonDto2(val name: String? = null, val someId: MyId<PersonDto2>)
+
+  data class PersonDto3(val name: String? = null, val someId: TypedId<Person>)
+
+  data class UnregisteredDto(val someId: UnregisteredId<UnregisteredDto>)
 
   @Test
   fun `should serialize TypedString to string`() {
-    val myId = MyId("test-id-123")
+    val myId = MyId("test-id-123", PersonDto2::class)
 
     val json = objectMapper.writeValueAsString(myId)
 
@@ -91,20 +113,70 @@ class TypedValueSerializationTest : AbstractIntegrationTest() {
   }
 
   @Test
-  fun `should deserialize MyId from JSON string`() {
+  fun `should deserialize MyId from JSON string with correct runtime type`() {
     val json = "\"test-id-456\""
 
-    val myId: MyId = objectMapper.readValue(json, MyId::class.java)
+    val myId: MyId<PersonDto2> =
+      objectMapper.readValue(json, object : TypeReference<MyId<PersonDto2>>() {})
 
     assertThat(myId.value).isEqualTo("test-id-456")
+    // Verify actual runtime type is MyId, not TypedString (thanks to registration)
+    assertThat(myId::class).isEqualTo(MyId::class)
+    assertThat(myId is MyId).isEqualTo(true)
   }
 
   @Test
-  fun `should deserialize custom TypedString subclass in DTO`() {
+  fun `should deserialize custom TypedString subclass in DTO with correct runtime type`() {
     val id = "custom-id-789"
     val json = """{"name":"Jane Doe","someId":"$id"}"""
 
     val person = objectMapper.readValue(json, PersonDto2::class.java)
+
+    assertThat(person.name).isEqualTo("Jane Doe")
+    assertThat(person.someId).isNotNull()
+    assertThat(person.someId.value).isEqualTo(id)
+    // Verify actual runtime type is MyId (thanks to registration)
+    assertThat(person.someId::class).isEqualTo(MyId::class)
+    assertThat(person.someId is MyId).isEqualTo(true)
+  }
+
+  @Test
+  fun `should fail to deserialize unregistered custom type due to type mismatch`() {
+    val id = "unregistered-123"
+    val json = """{"someId":"$id"}"""
+
+    assertFailure { objectMapper.readValue(json, UnregisteredDto::class.java) }
+      .isInstanceOf<IllegalStateException>()
+      .messageContains(
+        """
+        Unsupported TypedValue subtype: UnregisteredId at property 'someId'.
+        Ensure the type is one of the built-in types (TypedValue, TypedString, TypedLong, TypedUuid, TypedInt) 
+        or is registered via TypedValueModule.registerCustomTypedValue().
+        """
+          .trimIndent()
+      )
+  }
+
+  @Test
+  fun `should verify TypedId has correct runtime type due to registration`() {
+    val id = "typed-id-999"
+    val json = """{"name":"Test Person","someId":"$id"}"""
+
+    val person = objectMapper.readValue(json, PersonDto3::class.java)
+
+    assertThat(person.someId.value).isEqualTo(id)
+    // Verify actual runtime type is TypedId (thanks to registration)
+    assertThat(person.someId::class).isEqualTo(TypedId::class)
+    assertThat(person.someId is TypedId<*>).isEqualTo(true)
+    assertThat(person.someId is TypedString<*>).isEqualTo(true) // Still a TypedString subclass
+  }
+
+  @Test
+  fun `should deserialize custom TypedId in DTO`() {
+    val id = "custom-id-789"
+    val json = """{"name":"Jane Doe","someId":"$id"}"""
+
+    val person = objectMapper.readValue(json, PersonDto3::class.java)
 
     assertThat(person.name).isEqualTo("Jane Doe")
     assertThat(person.someId).isNotNull()

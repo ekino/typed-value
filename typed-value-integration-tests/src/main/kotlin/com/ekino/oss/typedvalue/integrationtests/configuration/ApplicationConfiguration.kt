@@ -5,6 +5,7 @@ package com.ekino.oss.typedvalue.integrationtests.configuration
 
 import com.ekino.oss.typedvalue.elasticsearch.TypedValueElasticsearchMappingContext
 import com.ekino.oss.typedvalue.hibernate.spring.TypedValueJpaRepositoryFactoryBean
+import com.ekino.oss.typedvalue.integrationtests.model.MyId
 import com.ekino.oss.typedvalue.integrationtests.model.TypedId
 import com.ekino.oss.typedvalue.jackson.TypedValueModule
 import org.springframework.context.annotation.Bean
@@ -19,7 +20,16 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 )
 class ApplicationConfiguration {
 
-  @Bean fun typedValueModule() = TypedValueModule()
+  @Bean
+  fun typedValueModule() =
+    TypedValueModule().apply {
+      // Register TypedId for proper runtime type reconstruction
+      registerCustomTypedValue<TypedId<*>, String> { value, entityKClass ->
+        TypedId(value, entityKClass)
+      }
+      // Register MyId for proper runtime type reconstruction
+      registerCustomTypedValue<MyId<*>, String> { value, entityKClass -> MyId(value, entityKClass) }
+    }
 
   @Bean
   fun elasticsearchMappingContext(

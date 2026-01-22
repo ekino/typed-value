@@ -121,6 +121,59 @@ val json = objectMapper.writeValueAsString(UserDto("user-123".toTypedString(), "
 // {"id":"user-123","name":"Alice"}
 ```
 
+#### Custom TypedValue Types
+
+Register custom TypedValue subtypes for JSON serialization/deserialization:
+
+**Kotlin:**
+```kotlin
+class TypedId<T : Any>(id: String, type: KClass<T>) : TypedString<T>(id, type)
+
+@Configuration
+class JacksonConfig {
+    @Bean
+    fun typedValueModule() = TypedValueModule().apply {
+        registerCustomTypedValue<TypedId<*>, String> { value, entityKClass ->
+            TypedId(value, entityKClass)
+        }
+    }
+}
+
+// Use in DTOs
+data class UserDto(val id: TypedId<User>, val name: String)
+```
+
+**Java:**
+```java
+public class TypedId<T> extends TypedString<T> {
+    public TypedId(String id, KClass<T> type) {
+        super(id, type);
+    }
+}
+
+@Configuration
+class JacksonConfig {
+    @Bean
+    public TypedValueModule typedValueModule() {
+        TypedValueModule module = new TypedValueModule();
+        module.registerCustomTypedValue(
+            TypedId.class,
+            String.class,
+            (value, entityClass) -> new TypedId<>(
+                value,
+                JvmClassMappingKt.getKotlinClass(entityClass)
+            )
+        );
+        return module;
+    }
+}
+```
+
+**Key points:**
+- Registration must happen before registering the module with ObjectMapper
+- Built-in types (TypedValue, TypedString, TypedInt, TypedLong, TypedUuid) cannot be overridden
+- Supports both single values and collections (e.g., `List<TypedId<User>>`)
+
 ### Spring MVC
 
 Auto-configured when `typed-value-spring` is on the classpath.

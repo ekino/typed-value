@@ -188,6 +188,165 @@ data class Dto(
 
 ---
 
+## Custom TypedValue Types
+
+If you create custom TypedValue subtypes, you must register them with the module to ensure proper runtime type reconstruction. Without registration, deserialization will fail or produce incorrect runtime types.
+
+### Why Registration is Required
+
+When deserializing JSON, Jackson needs to know how to construct your custom type. Without registration:
+- Jackson creates instances of the parent type (e.g., `TypedString`) instead of your custom type
+- Attempting to cast the result to your custom type fails with `ClassCastException`
+
+**With registration:**
+```kotlin
+val myId: MyId<User> = objectMapper.readValue(json)
+myId::class == MyId::class  // ✅ true - actual MyId instance
+```
+
+**Without registration:**
+```kotlin
+val myId: MyId<User> = objectMapper.readValue(json)
+// ❌ ClassCastException: TypedString cannot be cast to MyId
+```
+
+### Registration Methods
+
+The module provides three registration methods for different use cases:
+
+#### Kotlin DSL (Recommended)
+
+```kotlin
+class MyId<T : Any>(id: String, type: KClass<T>) : TypedString<T>(id, type)
+
+@Configuration
+class JacksonConfig {
+    @Bean
+    fun typedValueModule() = TypedValueModule().apply {
+        registerCustomTypedValue<MyId<*>, String> { value, entityKClass ->
+            MyId(value, entityKClass)
+        }
+    }
+}
+```
+
+#### Java-style with Class Parameters
+
+```kotlin
+@Bean
+fun typedValueModule() = TypedValueModule().apply {
+    registerCustomTypedValue(
+        typedValueClass = MyId::class.java,
+        valueType = String::class
+    ) { value, entityKClass ->
+        MyId(value, entityKClass)
+    }
+}
+```
+
+#### Java Interop
+
+```java
+public class MyId<T> extends TypedString<T> {
+    public MyId(String id, KClass<T> type) {
+        super(id, type);
+    }
+}
+
+@Configuration
+class JacksonConfig {
+    @Bean
+    public TypedValueModule typedValueModule() {
+        TypedValueModule module = new TypedValueModule();
+        module.registerCustomTypedValue(
+            MyId.class,
+            String.class,
+            (value, entityClass) -> new MyId<>(
+                value,
+                JvmClassMappingKt.getKotlinClass(entityClass)
+            )
+        );
+        return module;
+    }
+}
+```
+
+### Usage Example
+
+Once registered, your custom types work seamlessly:
+
+```kotlin
+// DTOs with custom types
+data class UserDto(
+    val id: MyId<User>,
+    val friendIds: List<MyId<User>>
+)
+
+// Serialization
+val user = UserDto(
+    id = MyId("user-123", User::class),
+    friendIds = listOf(
+        MyId("user-456", User::class),
+        MyId("user-789", User::class)
+    )
+)
+
+val json = objectMapper.writeValueAsString(user)
+// {"id":"user-123","friendIds":["user-456","user-789"]}
+
+// Deserialization
+val deserialized = objectMapper.readValue<UserDto>(json)
+deserialized.id::class == MyId::class  // ✅ true
+```
+
+### Custom Validation Example
+
+Registration is especially useful for types with validation logic:
+
+```kotlin
+class ValidatedId<T : Any>(id: String, type: KClass<T>) : TypedString<T>(id, type) {
+    init {
+        require(id.matches(Regex("^[A-Z]{3}-\\d{6}$"))) {
+            "Invalid ID format: $id (expected: XXX-123456)"
+        }
+    }
+}
+
+@Bean
+fun typedValueModule() = TypedValueModule().apply {
+    registerCustomTypedValue<ValidatedId<*>, String> { value, entityKClass ->
+        ValidatedId(value, entityKClass)  // Triggers validation
+    }
+}
+
+// Usage
+val json = """{"id":"ABC-123456"}"""
+val dto = objectMapper.readValue<UserDto>(json)  // ✅ Passes validation
+
+val invalidJson = """{"id":"invalid"}"""
+objectMapper.readValue<UserDto>(invalidJson)  // ❌ IllegalArgumentException
+```
+
+### Important Notes
+
+::: warning Registration Required
+Built-in types (`TypedValue`, `TypedString`, `TypedInt`, `TypedLong`, `TypedUuid`) cannot be overridden. Attempting to register them throws `IllegalArgumentException`.
+:::
+
+::: info Registration Timing
+Registration must happen **before** the module is registered with ObjectMapper. Jackson's ObjectMapper is immutable after construction, so all configuration must be done during setup.
+:::
+
+::: tip Collections Support
+Registered custom types work in collections (`List`, `Set`) just like built-in types:
+
+```kotlin
+data class TeamDto(val memberIds: List<MyId<User>>)
+```
+:::
+
+---
+
 ## Collections
 
 TypedValue works in collections:

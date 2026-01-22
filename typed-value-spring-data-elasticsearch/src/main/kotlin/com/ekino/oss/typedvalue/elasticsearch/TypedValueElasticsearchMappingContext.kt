@@ -148,9 +148,11 @@ class TypedValueElasticsearchMappingContext : SimpleElasticsearchMappingContext(
     constructor: (value: VALUE, entityKClass: KClass<Any>) -> T,
   ) {
     check(!registryLocked) {
-      "Cannot register custom TypedValue types after mapping context initialization. " +
-        "Ensure registerCustomTypedValue() is called during bean construction, before Spring " +
-        "calls initialize() or afterPropertiesSet()."
+      """
+      |Cannot register custom TypedValue types after mapping context initialization. 
+      |Ensure registerCustomTypedValue() is called during bean construction, before Spring calls initialize() or afterPropertiesSet().
+      """
+        .trimMargin()
     }
 
     require(!customTypeRegistry.containsKey(typedValueClass)) {
@@ -297,35 +299,32 @@ class TypedValueElasticsearchMappingContext : SimpleElasticsearchMappingContext(
 
       rejectArraysOrSets(persistentProperty, owner, property, typedValueType)
 
-      val typeArgs = typedValueType.typeArguments ?: emptyList()
+      val typeArgs = typedValueType.typeArguments
       val rawClass = typedValueType.type
 
       // Convenience types (TypedUuid, TypedString, TypedLong, TypedInt) have 1 type param: T
       // Generic TypedValue has 2 type params: ID, T
       val isConvenienceType =
-        rawClass != null &&
-          (TypedUuid::class.java.isAssignableFrom(rawClass) ||
-            TypedString::class.java.isAssignableFrom(rawClass) ||
-            TypedLong::class.java.isAssignableFrom(rawClass) ||
-            TypedInt::class.java.isAssignableFrom(rawClass))
+        (TypedUuid::class.java.isAssignableFrom(rawClass) ||
+          TypedString::class.java.isAssignableFrom(rawClass) ||
+          TypedLong::class.java.isAssignableFrom(rawClass) ||
+          TypedInt::class.java.isAssignableFrom(rawClass))
 
       // Extract entity type (T)
       val entityTypeIndex = if (isConvenienceType) 0 else 1
       val typedIdEntityType =
         typeArgs.getOrNull(entityTypeIndex)?.type?.takeUnless { it == Any::class.java }
           ?: throw UnsupportedOperationException(
-            "Actual type of ${typedValueType.type.simpleName} could not be resolved for property: " +
-              "${owner.type.name}#${property.name}"
+            "Actual type of ${typedValueType.type.simpleName} could not be resolved for property: ${owner.type.name}#${property.name}"
           )
 
       // Extract ID type - for convenience types, it's known from the class
       val typedIdType =
         when {
-          rawClass != null && TypedUuid::class.java.isAssignableFrom(rawClass) -> UUID::class.java
-          rawClass != null && TypedString::class.java.isAssignableFrom(rawClass) ->
-            String::class.java
-          rawClass != null && TypedLong::class.java.isAssignableFrom(rawClass) -> Long::class.java
-          rawClass != null && TypedInt::class.java.isAssignableFrom(rawClass) -> Int::class.java
+          TypedUuid::class.java.isAssignableFrom(rawClass) -> UUID::class.java
+          TypedString::class.java.isAssignableFrom(rawClass) -> String::class.java
+          TypedLong::class.java.isAssignableFrom(rawClass) -> Long::class.java
+          TypedInt::class.java.isAssignableFrom(rawClass) -> Int::class.java
           else -> typeArgs.getOrNull(0)?.type ?: String::class.java
         }
 
@@ -350,8 +349,7 @@ class TypedValueElasticsearchMappingContext : SimpleElasticsearchMappingContext(
     // Validate: reject Arrays
     if (persistentProperty.isArray) {
       throw UnsupportedOperationException(
-        "Arrays of ${typedValueType.type.simpleName} are not supported. " +
-          "Caused by property: ${owner.type.name}#${property.name}"
+        "Arrays of ${typedValueType.type.simpleName} are not supported. Caused by property: ${owner.type.name}#${property.name}"
       )
     }
     // Validate: reject Sets
@@ -360,8 +358,7 @@ class TypedValueElasticsearchMappingContext : SimpleElasticsearchMappingContext(
         Set::class.java.isAssignableFrom(persistentProperty.rawType)
     ) {
       throw UnsupportedOperationException(
-        "Sets of ${typedValueType.type.simpleName} are not supported. " +
-          "Caused by property: ${owner.type.name}#${property.name}"
+        "Sets of ${typedValueType.type.simpleName} are not supported. Caused by property: ${owner.type.name}#${property.name}"
       )
     }
   }
@@ -428,12 +425,10 @@ internal class TypedValueElasticPersistentPropertyWithConverter(
     val registration = typedValueClass?.let { customTypeRegistry[it] }
     if (registration != null) {
       // Validate incoming value type matches registered VALUE type
-      if (value::class != registration.valueType) {
-        throw IllegalStateException(
-          "Type mismatch for ${typedValueClass.name}: expected raw value type " +
-            "${registration.valueType.simpleName} from Elasticsearch but got ${value::class.simpleName} " +
-            "with value: $value"
-        )
+      check(value::class == registration.valueType) {
+        "Type mismatch for ${typedValueClass.name}: expected raw value type " +
+          "${registration.valueType.simpleName} from Elasticsearch but got ${value::class.simpleName} " +
+          "with value: $value"
       }
     }
 
