@@ -34,32 +34,11 @@ class TypedValueElasticsearchMappingContext : SimpleElasticsearchMappingContext(
 
 ### Features
 
-- Automatically detects TypedValue fields
-- Resolves generic type parameters at compile time
-- Converts TypedValue to raw ID for storage
-- Reconstructs TypedValue from raw ID on retrieval
+- Automatically detects TypedValue fields through dynamic property inspection
+- Resolves generic type parameters at runtime
+- Converts TypedValue to raw value for storage
+- Reconstructs TypedValue from raw value on retrieval
 - Supports `Collection<TypedValue>` (Lists only)
-
-### Registered Simple Types
-
-The mapping context registers TypedValue and all convenience types as simple types:
-
-```kotlin
-setSimpleTypeHolder(
-    SimpleTypeHolder(
-        setOf(
-            TypedValue::class.java,
-            TypedString::class.java,
-            TypedInt::class.java,
-            TypedLong::class.java,
-            TypedUuid::class.java,
-        ),
-        true,
-    )
-)
-```
-
-This prevents Spring Data from trying to create PersistentEntity for them.
 
 ---
 
@@ -117,6 +96,252 @@ class ElasticsearchConfig : ElasticsearchConfigurationSupport() {
         return TypedValueElasticsearchMappingContext()
     }
 }
+```
+
+---
+
+## Custom TypedValue Registration
+
+::: tip New Feature
+Register custom TypedValue subclasses to be properly reconstructed from Elasticsearch.
+:::
+
+### Overview
+
+By default, custom TypedValue subclasses (e.g., `TypedId` extending `TypedString`) are stored correctly but reconstructed as their base type (`TypedString`) when read from Elasticsearch. The registration API allows you to specify how to reconstruct your custom types.
+
+### Use Case
+
+```kotlin
+// Custom TypedValue type
+open class TypedId<T : Any>(id: String, type: KClass<T>) : TypedString<T>(id, type)
+
+// Without registration:
+// Stored: TypedId("user-123", User::class)
+// Retrieved: TypedString("user-123", User::class)  // Lost custom type!
+
+// With registration:
+// Stored: TypedId("user-123", User::class)
+// Retrieved: TypedId("user-123", User::class)  // Custom type preserved ✓
+```
+
+### Registration APIs
+
+Works seamlessly with Spring Boot auto-configuration - no special order or configuration needed.
+
+**Primary API (Kotlin):**
+
+```kotlin
+@Configuration
+class ElasticsearchConfig {
+
+    @Bean
+    fun elasticsearchMappingContext(): TypedValueElasticsearchMappingContext {
+        val context = TypedValueElasticsearchMappingContext()
+
+        // Register custom TypedValue type
+        context.registerCustomTypedValue(TypedId::class.java, String::class) { value, entityKClass ->
+            TypedId(value, entityKClass)
+        }
+
+        return context
+    }
+}
+```
+
+You can also inject `ElasticsearchCustomConversions` if needed, though it's not required for TypedValue detection:
+
+```kotlin
+@Bean
+fun elasticsearchMappingContext(
+    elasticsearchCustomConversions: ElasticsearchCustomConversions
+): TypedValueElasticsearchMappingContext {
+    val context = TypedValueElasticsearchMappingContext()
+
+    // The parameter is injected by Spring but you don't need to use it
+    // TypedValue detection happens dynamically
+    context.registerCustomTypedValue(TypedId::class.java, String::class) { value, entityKClass ->
+        TypedId(value, entityKClass)
+    }
+
+    return context
+}
+```
+
+**Kotlin DSL (Reified):**
+
+```kotlin
+@Bean
+fun elasticsearchMappingContext(): TypedValueElasticsearchMappingContext {
+    val context = TypedValueElasticsearchMappingContext()
+
+    // Use reified generics for cleaner syntax
+    context.registerCustomTypedValue<TypedId<*>, String> { value, entityKClass ->
+        TypedId(value, entityKClass)
+    }
+
+    return context
+}
+```
+
+**Java-Friendly API:**
+
+```java
+@Configuration
+public class ElasticsearchConfig {
+
+    @Bean
+    public TypedValueElasticsearchMappingContext elasticsearchMappingContext() {
+        TypedValueElasticsearchMappingContext context =
+            new TypedValueElasticsearchMappingContext();
+
+        // Use functional interface
+        context.registerCustomTypedValue(
+            TypedId.class,
+            String.class,
+            (value, entityClass) -> new TypedId(
+                (String) value,
+                JvmClassMappingKt.getKotlinClass(entityClass)
+            )
+        );
+
+        return context;
+    }
+}
+```
+
+### Registration Rules
+
+::: warning Important
+- Must be called **BEFORE** `initialize()` or `setInitialEntitySet()`
+- Registration is locked after Spring context initialization
+- Each type can only be registered once
+- Custom types must extend `TypedValue`
+:::
+
+**Valid:**
+
+```kotlin
+val context = TypedValueElasticsearchMappingContext()
+context.registerCustomTypedValue(TypedId::class.java, String::class) { value, entityKClass ->
+    TypedId(value, entityKClass)
+}
+context.initialize()  // ✓ Registration before initialization
+```
+
+**Invalid:**
+
+```kotlin
+val context = TypedValueElasticsearchMappingContext()
+context.initialize()
+context.registerCustomTypedValue(...)  // ✗ Throws IllegalStateException
+```
+
+### Multiple Custom Types
+
+Register multiple types independently:
+
+```kotlin
+@Bean
+fun elasticsearchMappingContext(): TypedValueElasticsearchMappingContext {
+    val context = TypedValueElasticsearchMappingContext()
+
+    // Register TypedId
+    context.registerCustomTypedValue<TypedId<*>> { value, entityKClass ->
+        TypedId(value as String, entityKClass)
+    }
+
+    // Register TypedCode
+    context.registerCustomTypedValue<TypedCode<*>> { value, entityKClass ->
+        TypedCode(value as String, entityKClass)
+    }
+
+    return context
+}
+```
+
+### Document Usage
+
+```kotlin
+// Define custom type
+open class TypedId<T : Any>(id: String, type: KClass<T>) : TypedString<T>(id, type)
+
+// Use in document
+@Document(indexName = "users")
+data class UserDocument(
+    @Id
+    val id: TypedUuid<User>,
+
+    @Field(type = FieldType.Keyword)
+    val customId: TypedId<User>,  // Custom type
+
+    val name: String
+)
+
+// Repository operations
+val user = UserDocument(
+    id = UUID.randomUUID().toTypedUuid(),
+    customId = TypedId("custom-123", User::class),
+    name = "John Doe"
+)
+
+repository.save(user)
+
+// Retrieved user has correct type
+val retrieved = repository.findById(user.id).get()
+check(retrieved.customId is TypedId<User>)  // ✓ Not TypedString
+```
+
+### Backward Compatibility
+
+Unregistered custom types fall back to their base type:
+
+```kotlin
+// TypedId NOT registered
+@Document(indexName = "users")
+data class UserDocument(
+    @Id val id: TypedId<User>  // Extends TypedString
+)
+
+// Fallback behavior
+val saved = repository.save(UserDocument(id = TypedId("id-123", User::class)))
+val retrieved = repository.findById(saved.id).get()
+
+// Retrieved as TypedString (base type)
+check(retrieved.id is TypedString<User>)  // ✓ Fallback works
+check(retrieved.id !is TypedId<User>)     // Custom type lost
+```
+
+### Error Handling
+
+**Constructor Exceptions:**
+
+Exceptions from custom constructors are wrapped with context:
+
+```kotlin
+context.registerCustomTypedValue<TypedId<*>> { value, entityKClass ->
+    throw RuntimeException("Invalid ID format")
+}
+
+// Reading from Elasticsearch throws:
+// IllegalStateException: "Failed to construct TypedValue of type TypedId
+//   for entity User with value: user-123"
+// Caused by: RuntimeException: Invalid ID format
+```
+
+**Registration Errors:**
+
+```kotlin
+// Duplicate registration
+context.registerCustomTypedValue<TypedId<*>> { ... }
+context.registerCustomTypedValue<TypedId<*>> { ... }
+// Throws: IllegalArgumentException: "TypedValue class TypedId is already registered"
+
+// Late registration
+context.initialize()
+context.registerCustomTypedValue<TypedId<*>> { ... }
+// Throws: IllegalStateException: "Cannot register custom TypedValue types after
+//   mapping context initialization"
 ```
 
 ---

@@ -165,6 +165,51 @@ class QueryDslTests : AbstractIntegrationTest() {
 
       assertThat(result).isNotNull().isEqualTo(person)
     }
+
+    @Test
+    fun `should select into TypedValue`() {
+      val person = personRepository.findById(personIds.random()).getOrNull()!!
+      val personNameExpr = QPerson.person.typedValueExpressionOf { it.name }
+      val result =
+        queryFactory
+          .select(personNameExpr)
+          .from(QPerson.person)
+          .where(QPerson.person.someUuidRef.eq(person.someUuidRef!!))
+          .fetchOne()
+
+      assertThat(result).isNotNull().transform { it.value }.isEqualTo(person.name)
+    }
+
+    @Test
+    fun `should select into TypedString`() {
+      val person = personRepository.findById(personIds.random()).getOrNull()!!
+      val personNameExpr =
+        QPerson.person.name.typedValueExpressionOf { id -> TypedString.of(id, Person::class) }
+      val result =
+        queryFactory
+          .select(personNameExpr)
+          .from(QPerson.person)
+          .where(QPerson.person.someUuidRef.eq(person.someUuidRef!!))
+          .fetchOne()
+
+      assertThat(result).isNotNull().transform { it.value }.isEqualTo(person.name)
+    }
+
+    @Test
+    fun `should select into custom TypedValueTyped`() {
+      class PersonNameTyped(id: String) : TypedString<Person>(id, Person::class)
+
+      val person = personRepository.findById(personIds.random()).getOrNull()!!
+      val personNameExpr = QPerson.person.name.typedValueExpressionOf { id -> PersonNameTyped(id) }
+      val result =
+        queryFactory
+          .select(personNameExpr)
+          .from(QPerson.person)
+          .where(QPerson.person.someUuidRef.eq(person.someUuidRef!!))
+          .fetchOne()
+
+      assertThat(result).isNotNull().transform { it.value }.isEqualTo(person.name)
+    }
   }
 
   @Nested

@@ -3,6 +3,8 @@
  */
 package com.ekino.oss.typedvalue
 
+import com.ekino.oss.typedvalue.TypedValue.Companion.rawIds
+import kotlin.jvm.JvmStatic
 import kotlin.reflect.KClass
 
 /**
@@ -130,6 +132,7 @@ open class TypedValue<VALUE : Comparable<VALUE>, T : Any>(
      * @param typedValues Collection of TypedValues
      * @return List of underlying identifier values
      */
+    @JvmStatic
     fun <ID : Comparable<ID>> rawIds(typedValues: Iterable<TypedValue<ID, *>>): List<ID> =
       typedValues.map { it.value }
 
@@ -138,6 +141,7 @@ open class TypedValue<VALUE : Comparable<VALUE>, T : Any>(
      *
      * @see rawIds
      */
+    @JvmStatic
     fun <ID : Comparable<ID>> Iterable<TypedValue<ID, *>>.toRawIds(): List<ID> = map { it.value }
   }
 
@@ -227,21 +231,3 @@ inline fun <ID : Comparable<ID>, reified T : Any> TypedValue<ID, *>.takeIfAboutT
     null
   }
 }
-
-/**
- * Extracts the underlying identifier values from a collection of TypedValues.
- *
- * This is the Kotlin idiomatic extension version of [TypedValue.rawIds].
- *
- * Example:
- * ```kotlin
- * val userIds: List<TypedValue<String, User>> = listOf(...)
- * val rawIds: List<String> = userIds.toRawIds()  // ["user-1", "user-2", ...]
- *
- * // Use in queries
- * val users = userRepository.findAllById(userIds.toRawIds())
- * ```
- *
- * @return List of underlying identifier values
- */
-fun <ID : Comparable<ID>> Collection<TypedValue<ID, *>>.toRawIds(): List<ID> = map { it.value }

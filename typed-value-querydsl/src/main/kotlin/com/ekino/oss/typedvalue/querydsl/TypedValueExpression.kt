@@ -40,21 +40,22 @@ import java.util.function.Function
  * @param ID The type of the identifier (String, Long, UUID, etc.)
  * @param T The entity type
  */
-class TypedValueExpression<ID : Comparable<ID>, T : Any>
-private constructor(private val actualType: Class<out T>, private val idPath: Expression<ID>) :
-  FactoryExpression<TypedValue<ID, T>> {
+class TypedValueExpression<ID : Comparable<ID>, T : Any, E : TypedValue<ID, T>>(
+  private val typedIdClass: Class<E>,
+  private val idPath: Expression<ID>,
+  private val constructor: (value: ID) -> E,
+) : FactoryExpression<E> {
 
   private val args = listOf(idPath)
 
-  override fun newInstance(vararg args: Any): TypedValue<ID, T>? {
+  override fun newInstance(vararg args: Any): E? {
     val rawId = args.firstOrNull() ?: return null
     @Suppress("UNCHECKED_CAST")
-    return TypedValue(rawId as ID, actualType.kotlin)
+    return constructor(rawId as ID)
   }
 
-  override fun getType(): Class<out TypedValue<ID, T>> {
-    @Suppress("UNCHECKED_CAST")
-    return TypedValue::class.java as Class<TypedValue<ID, T>>
+  override fun getType(): Class<E> {
+    return typedIdClass
   }
 
   override fun getArgs(): List<Expression<*>> = args
@@ -154,14 +155,82 @@ private constructor(private val actualType: Class<out T>, private val idPath: Ex
 
   companion object {
 
+    /**
+     * Factory method for creating TypedValueExpression with explicit class parameter. This method
+     * is primarily for Java interop or when the type cannot be inferred.
+     *
+     * **Java Usage Note**: Due to Java's type erasure, when using custom TypedValue subclasses,
+     * you'll get unchecked cast warnings. This is expected and safe - use
+     * `@SuppressWarnings("unchecked")` on the calling method.
+     *
+     * Example Java usage:
+     * ```java
+     * @SuppressWarnings("unchecked")
+     * TypedValueExpression<String, User, TypedId<User>> expr =
+     *     typedValueExpressionOf(TypedId.class, path, value -> new TypedId<>(value, userKClass));
+     * ```
+     *
+     * **Kotlin Usage**: Prefer the inline reified extension function `Path.typedValueExpressionOf`
+     * which provides better type safety and doesn't require passing the class explicitly.
+     *
+     * @param typedValueClass The Class object for the TypedValue type V
+     * @param path The QueryDSL path expression
+     * @param constructor Function to construct V from ID value
+     * @return TypedValueExpression instance
+     */
+    @JvmStatic
+    fun <ID : Comparable<ID>, T : Any, V : TypedValue<ID, T>> typedValueExpressionOf(
+      typedValueClass: Class<out V>,
+      path: Path<ID>,
+      constructor: Function<ID, V>,
+    ): TypedValueExpression<ID, T, V> {
+      @Suppress("UNCHECKED_CAST")
+      return TypedValueExpression(typedValueClass as Class<V>, path, constructor::apply)
+    }
+
+    /**
+     * Kotlin extension function for creating TypedValueExpression with automatic type inference.
+     * This is the preferred method for Kotlin code as it provides compile-time type safety without
+     * needing to pass the class explicitly.
+     *
+     * Example usage with custom TypedValue:
+     * ```kotlin
+     * val expression = QUser.user.id.typedValueExpressionOf<TypedId<User>> { id ->
+     *   TypedId(id, User::class)
+     * }
+     * ```
+     *
+     * Example usage with standard TypedValue (type can often be inferred):
+     * ```kotlin
+     * val expression = QUser.user.id.typedValueExpressionOf { id ->
+     *   TypedString.of(id, User::class)
+     * }
+     * ```
+     *
+     * @param V The TypedValue type (can be TypedValue, TypedString, or custom subclass)
+     * @param ID The type of the identifier (String, Long, UUID, etc.)
+     * @param T The entity type
+     * @param constructor Function to construct V from ID value
+     * @return TypedValueExpression instance
+     */
+    inline fun <reified V : TypedValue<ID, T>, ID : Comparable<ID>, T : Any> Path<ID>
+      .typedValueExpressionOf(
+      noinline constructor: (value: ID) -> V
+    ): TypedValueExpression<ID, T, V> {
+      return TypedValueExpression(V::class.java, this, constructor)
+    }
+
     @JvmStatic
     fun <ID : Comparable<ID>, T : Any, E : EntityPathBase<T>> E.typedValueExpressionOf(
       pathSelector: Function<E, Path<ID>>
-    ): TypedValueExpression<ID, T> {
+    ): TypedValueExpression<ID, T, TypedValue<ID, T>> {
       val entityPath = pathSelector.apply(this)
       require(this.root == entityPath.root) { "EntityPath and id Path must share the same root" }
       @Suppress("UNCHECKED_CAST")
-      return TypedValueExpression(this.type as Class<out T>, entityPath)
+      return TypedValueExpression(TypedValue::class.java as Class<TypedValue<ID, T>>, entityPath) {
+        value: ID ->
+        TypedValue.typedValueFor(value, entityPath.root.type.kotlin) as TypedValue<ID, T>
+      }
     }
   }
 }

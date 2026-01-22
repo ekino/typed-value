@@ -16,6 +16,7 @@ import com.ekino.oss.typedvalue.TypedString
 import com.ekino.oss.typedvalue.TypedUuid
 import com.ekino.oss.typedvalue.TypedValue
 import java.util.UUID
+import kotlin.reflect.KClass
 import org.junit.jupiter.api.Test
 import org.springframework.data.elasticsearch.annotations.Document
 import org.springframework.data.mapping.MappingException
@@ -276,6 +277,266 @@ class TypedValueElasticsearchMappingContextTest {
     assertThat(idsProperty.hasPropertyValueConverter()).isEqualTo(true)
   }
 
+  // Custom TypedValue registration tests
+
+  @Test
+  fun `should register and reconstruct custom TypedValue type`() {
+    val mappingContext = TypedValueElasticsearchMappingContext()
+
+    // Register custom type before initialization
+    mappingContext.registerCustomTypedValue(TypedId::class.java, String::class) {
+      value,
+      entityKClass ->
+      TypedId(value, entityKClass)
+    }
+
+    mappingContext.setInitialEntitySet(setOf(CustomTypeDocument::class.java))
+    mappingContext.initialize()
+
+    val entity = mappingContext.getRequiredPersistentEntity(CustomTypeDocument::class.java)
+    val userIdProperty = entity.getRequiredPersistentProperty("userId")
+    val converter = userIdProperty.propertyValueConverter!!
+
+    // Write should convert to raw String
+    val typedId = TypedId("user-123", User::class)
+    val written = converter.write(typedId)
+    assertThat(written).isEqualTo("user-123")
+
+    // Read should return TypedId (not TypedString)
+    val read = converter.read("user-456")
+    assertThat(read).isInstanceOf<TypedId<*>>()
+    val typedRead = read as TypedId<*>
+    assertThat(typedRead.value).isEqualTo("user-456")
+    assertThat(typedRead.type).isEqualTo(User::class)
+  }
+
+  @Test
+  fun `should register and handle List of custom TypedValue type`() {
+    val mappingContext = TypedValueElasticsearchMappingContext()
+
+    // Register custom type
+    mappingContext.registerCustomTypedValue(TypedId::class.java, String::class) {
+      value,
+      entityKClass ->
+      TypedId(value, entityKClass)
+    }
+
+    mappingContext.setInitialEntitySet(setOf(CustomTypeListDocument::class.java))
+    mappingContext.initialize()
+
+    val entity = mappingContext.getRequiredPersistentEntity(CustomTypeListDocument::class.java)
+    val userIdsProperty = entity.getRequiredPersistentProperty("userIds")
+
+    assertThat(userIdsProperty.hasPropertyValueConverter()).isEqualTo(true)
+
+    val converter = userIdsProperty.propertyValueConverter!!
+    val read = converter.read("user-789")
+    assertThat(read).isInstanceOf<TypedId<*>>()
+  }
+
+  @Test
+  fun `should fall back to TypedString for unregistered custom type`() {
+    val mappingContext = TypedValueElasticsearchMappingContext()
+    // Don't register TypedId
+    mappingContext.setInitialEntitySet(setOf(CustomTypeDocument::class.java))
+    mappingContext.initialize()
+
+    val entity = mappingContext.getRequiredPersistentEntity(CustomTypeDocument::class.java)
+    val userIdProperty = entity.getRequiredPersistentProperty("userId")
+    val converter = userIdProperty.propertyValueConverter!!
+
+    // Read should return TypedString (fallback behavior)
+    val read = converter.read("user-456")
+    assertThat(read).isInstanceOf<TypedString<*>>()
+    val typedRead = read as TypedString<*>
+    assertThat(typedRead.value).isEqualTo("user-456")
+    assertThat(typedRead.type).isEqualTo(User::class)
+  }
+
+  @Test
+  fun `should fail when registering duplicate type`() {
+    val mappingContext = TypedValueElasticsearchMappingContext()
+
+    // Register once
+    mappingContext.registerCustomTypedValue(TypedId::class.java, String::class) {
+      value,
+      entityKClass ->
+      TypedId(value, entityKClass)
+    }
+
+    // Try to register again
+    assertFailure {
+        mappingContext.registerCustomTypedValue(TypedId::class.java, String::class) {
+          value,
+          entityKClass ->
+          TypedId(value, entityKClass)
+        }
+      }
+      .isInstanceOf<IllegalArgumentException>()
+      .messageContains("is already registered")
+  }
+
+  @Test
+  fun `should fail when registering after initialization`() {
+    val mappingContext = TypedValueElasticsearchMappingContext()
+    mappingContext.setInitialEntitySet(setOf(CustomTypeDocument::class.java))
+    mappingContext.initialize()
+
+    // Try to register after initialization
+    assertFailure {
+        mappingContext.registerCustomTypedValue(TypedId::class.java, String::class) {
+          value,
+          entityKClass ->
+          TypedId(value, entityKClass)
+        }
+      }
+      .isInstanceOf<IllegalStateException>()
+      .messageContains("after mapping context initialization")
+  }
+
+  @Test
+  fun `should wrap constructor exceptions with context`() {
+    val mappingContext = TypedValueElasticsearchMappingContext()
+
+    // Register with constructor that throws
+    mappingContext.registerCustomTypedValue(TypedId::class.java, String::class) { _, _ ->
+      @Suppress("TooGenericExceptionThrown") throw RuntimeException("Constructor failed")
+    }
+
+    mappingContext.setInitialEntitySet(setOf(CustomTypeDocument::class.java))
+    mappingContext.initialize()
+
+    val entity = mappingContext.getRequiredPersistentEntity(CustomTypeDocument::class.java)
+    val userIdProperty = entity.getRequiredPersistentProperty("userId")
+    val converter = userIdProperty.propertyValueConverter!!
+
+    // Read should wrap exception with context
+    val exception = assertFailure { converter.read("user-456") }
+    exception.isInstanceOf<IllegalStateException>()
+    exception.messageContains("Failed to construct TypedValue")
+    exception.messageContains("TypedId")
+    exception.messageContains("User")
+    exception.messageContains("user-456")
+    exception.cause().isNotNull().isInstanceOf<RuntimeException>()
+    exception.cause().isNotNull().messageContains("Constructor failed")
+  }
+
+  @Test
+  fun `should handle multiple custom types`() {
+    val mappingContext = TypedValueElasticsearchMappingContext()
+
+    // Register TypedId
+    mappingContext.registerCustomTypedValue(TypedId::class.java, String::class) {
+      value,
+      entityKClass ->
+      TypedId(value, entityKClass)
+    }
+
+    // Register TypedCode
+    mappingContext.registerCustomTypedValue(TypedCode::class.java, String::class) {
+      value,
+      entityKClass ->
+      TypedCode(value, entityKClass)
+    }
+
+    mappingContext.setInitialEntitySet(setOf(MultipleCustomTypesDocument::class.java))
+    mappingContext.initialize()
+
+    val entity = mappingContext.getRequiredPersistentEntity(MultipleCustomTypesDocument::class.java)
+
+    // Test TypedId field
+    val userIdProperty = entity.getRequiredPersistentProperty("userId")
+    val userIdConverter = userIdProperty.propertyValueConverter!!
+    val readUserId = userIdConverter.read("user-123")
+    assertThat(readUserId).isInstanceOf<TypedId<*>>()
+    assertThat((readUserId as TypedId<*>).value).isEqualTo("user-123")
+
+    // Test TypedCode field
+    val productCodeProperty = entity.getRequiredPersistentProperty("productCode")
+    val productCodeConverter = productCodeProperty.propertyValueConverter!!
+    val readProductCode = productCodeConverter.read("code-456")
+    assertThat(readProductCode).isInstanceOf<TypedCode<*>>()
+    assertThat((readProductCode as TypedCode<*>).value).isEqualTo("code-456")
+  }
+
+  @Test
+  fun `should work with reified API`() {
+    val mappingContext = TypedValueElasticsearchMappingContext()
+
+    // Use reified version with type-safe API
+    mappingContext.registerCustomTypedValue<TypedId<*>, String> { value, entityKClass ->
+      TypedId(value, entityKClass)
+    }
+
+    mappingContext.setInitialEntitySet(setOf(CustomTypeDocument::class.java))
+    mappingContext.initialize()
+
+    val entity = mappingContext.getRequiredPersistentEntity(CustomTypeDocument::class.java)
+    val userIdProperty = entity.getRequiredPersistentProperty("userId")
+    val converter = userIdProperty.propertyValueConverter!!
+
+    val read = converter.read("user-789")
+    assertThat(read).isInstanceOf<TypedId<*>>()
+    assertThat((read as TypedId<*>).value).isEqualTo("user-789")
+  }
+
+  @Test
+  fun `should work with Java-friendly API`() {
+    val mappingContext = TypedValueElasticsearchMappingContext()
+
+    // Use Java-friendly version with TypedValueConstructor interface
+    mappingContext.registerCustomTypedValue(
+      TypedId::class.java,
+      String::class.java,
+      TypedValueElasticsearchMappingContext.TypedValueConstructor { value, entityClass ->
+        TypedId(value, entityClass.kotlin)
+      },
+    )
+
+    mappingContext.setInitialEntitySet(setOf(CustomTypeDocument::class.java))
+    mappingContext.initialize()
+
+    val entity = mappingContext.getRequiredPersistentEntity(CustomTypeDocument::class.java)
+    val userIdProperty = entity.getRequiredPersistentProperty("userId")
+    val converter = userIdProperty.propertyValueConverter!!
+
+    val read = converter.read("user-999")
+    assertThat(read).isInstanceOf<TypedId<*>>()
+    assertThat((read as TypedId<*>).value).isEqualTo("user-999")
+  }
+
+  @Test
+  fun `should validate value type matches registered VALUE type`() {
+    val mappingContext = TypedValueElasticsearchMappingContext()
+
+    // Register TypedId with String value type
+    mappingContext.registerCustomTypedValue(TypedId::class.java, String::class) {
+      value,
+      entityKClass ->
+      TypedId(value, entityKClass)
+    }
+
+    mappingContext.setInitialEntitySet(setOf(CustomTypeDocument::class.java))
+    mappingContext.initialize()
+
+    val entity = mappingContext.getRequiredPersistentEntity(CustomTypeDocument::class.java)
+    val userIdProperty = entity.getRequiredPersistentProperty("userId")
+    val converter = userIdProperty.propertyValueConverter!!
+
+    // Try to read with wrong type (Long instead of String)
+    val exception = assertFailure { converter.read(12345L) }
+    exception.isInstanceOf<IllegalStateException>()
+    exception.messageContains("Type mismatch")
+    exception.messageContains("TypedId")
+    exception.messageContains("expected raw value type String")
+    exception.messageContains("from Elasticsearch but got Long")
+  }
+
+  // Custom TypedValue classes for testing
+  open class TypedId<T : Any>(id: String, type: KClass<T>) : TypedString<T>(id, type)
+
+  open class TypedCode<T : Any>(code: String, type: KClass<T>) : TypedString<T>(code, type)
+
   // Test document classes
   @Document(indexName = "simple")
   private data class SimpleDocument(val id: TypedValue<String, User>)
@@ -311,4 +572,17 @@ class TypedValueElasticsearchMappingContextTest {
 
   @Document(indexName = "typed-uuid-list")
   private data class TypedUuidListDocument(val userIds: List<TypedUuid<User>>)
+
+  // Custom type test document classes
+  @Document(indexName = "custom-type")
+  private data class CustomTypeDocument(val userId: TypedId<User>)
+
+  @Document(indexName = "custom-type-list")
+  private data class CustomTypeListDocument(val userIds: List<TypedId<User>>)
+
+  @Document(indexName = "multiple-custom-types")
+  private data class MultipleCustomTypesDocument(
+    val userId: TypedId<User>,
+    val productCode: TypedCode<Product>,
+  )
 }

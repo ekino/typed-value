@@ -11,6 +11,7 @@ import assertk.assertions.isLessThan
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
+import com.ekino.oss.typedvalue.TypedValue.Companion.toRawIds
 import kotlin.test.Test
 
 class TypedValueTest {

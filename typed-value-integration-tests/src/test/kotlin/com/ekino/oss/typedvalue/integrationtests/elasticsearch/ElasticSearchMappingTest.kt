@@ -6,11 +6,13 @@ package com.ekino.oss.typedvalue.integrationtests.elasticsearch
 import assertk.all
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
 import com.ekino.oss.typedvalue.TypedValue
 import com.ekino.oss.typedvalue.integrationtests.AbstractIntegrationTest
 import com.ekino.oss.typedvalue.integrationtests.elasticsearch.documents.IndexPerson
 import com.ekino.oss.typedvalue.integrationtests.model.Person
+import com.ekino.oss.typedvalue.integrationtests.model.TypedId
 import com.ekino.oss.typedvalue.toTypedInt
 import com.ekino.oss.typedvalue.toTypedLong
 import com.ekino.oss.typedvalue.toTypedString
@@ -32,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired
  * - [com.ekino.oss.typedvalue.TypedInt] (Int-based IDs)
  * - [com.ekino.oss.typedvalue.TypedLong] (Long-based IDs)
  * - Generic [com.ekino.oss.typedvalue.TypedValue] with String and UUID ID types
+ * - Custom TypedValue subclasses (TypedId) registered via registerCustomTypedValue()
  */
 class ElasticSearchMappingTest : AbstractIntegrationTest() {
 
@@ -133,6 +136,29 @@ class ElasticSearchMappingTest : AbstractIntegrationTest() {
   }
 
   @Test
+  fun `should map custom TypedId field to Elasticsearch`() {
+    context(elasticsearchService) {
+      val id = UUID.randomUUID().toTypedUuid<Person>()
+      val customId = TypedId("custom-id-123", Person::class)
+
+      IndexPerson(id = id, name = "Custom ID Person", customId = customId).index()
+      val retrievedPerson = id.find<IndexPerson>()
+
+      assertThat(retrievedPerson).isNotNull().all {
+        transform { it.id }.isEqualTo(id)
+        transform { it.customId }
+          .isNotNull()
+          .all {
+            // Verify it's TypedId (not TypedString fallback)
+            isInstanceOf<TypedId<Person>>()
+            transform { it.value }.isEqualTo("custom-id-123")
+            transform { it.type }.isEqualTo(Person::class)
+          }
+      }
+    }
+  }
+
+  @Test
   fun `should map all TypedValue variants together to Elasticsearch`() {
     context(elasticsearchService) {
       val id = UUID.randomUUID().toTypedUuid<Person>()
@@ -141,6 +167,7 @@ class ElasticSearchMappingTest : AbstractIntegrationTest() {
       val longId = 456789L.toTypedLong<Person>()
       val genericStringId = TypedValue.typedValueFor("generic-all", Person::class)
       val genericUuidId = TypedValue.typedValueFor(UUID.randomUUID(), Person::class)
+      val customId = TypedId("all-variants-custom", Person::class)
 
       IndexPerson(
           id = id,
@@ -150,6 +177,7 @@ class ElasticSearchMappingTest : AbstractIntegrationTest() {
           longId = longId,
           genericStringId = genericStringId,
           genericUuidId = genericUuidId,
+          customId = customId,
         )
         .index()
       val retrievedPerson = id.find<IndexPerson>()
@@ -162,6 +190,7 @@ class ElasticSearchMappingTest : AbstractIntegrationTest() {
         transform { it.longId }.isEqualTo(longId)
         transform { it.genericStringId }.isEqualTo(genericStringId)
         transform { it.genericUuidId }.isEqualTo(genericUuidId)
+        transform { it.customId }.isNotNull().isInstanceOf<TypedId<Person>>()
       }
     }
   }
