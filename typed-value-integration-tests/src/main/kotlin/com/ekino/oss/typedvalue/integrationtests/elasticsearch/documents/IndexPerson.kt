@@ -10,6 +10,8 @@ import com.ekino.oss.typedvalue.TypedUuid
 import com.ekino.oss.typedvalue.TypedValue
 import com.ekino.oss.typedvalue.integrationtests.elasticsearch.ElasticsearchDocument
 import com.ekino.oss.typedvalue.integrationtests.model.Person
+import com.ekino.oss.typedvalue.integrationtests.model.TypedId
+import java.math.BigDecimal
 import java.util.UUID
 import org.springframework.data.elasticsearch.annotations.Document
 import org.springframework.data.elasticsearch.annotations.Field
@@ -24,4 +26,6 @@ data class IndexPerson(
   @Field(type = FieldType.Long) val longId: TypedLong<Person>? = null,
   @Field(type = FieldType.Keyword) val genericStringId: TypedValue<String, Person>? = null,
   @Field(type = FieldType.Keyword) val genericUuidId: TypedValue<UUID, Person>? = null,
+  @Field(type = FieldType.Keyword) val customId: TypedId<Person>? = null,
+  @Field(type = FieldType.Double) val someBigDecimal: BigDecimal? = null,
 ) : ElasticsearchDocument<Person, UUID>

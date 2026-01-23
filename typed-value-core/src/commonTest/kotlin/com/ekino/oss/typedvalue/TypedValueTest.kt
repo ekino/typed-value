@@ -11,6 +11,7 @@ import assertk.assertions.isLessThan
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
+import com.ekino.oss.typedvalue.TypedValue.Companion.toRawIds
 import kotlin.test.Test
 
 class TypedValueTest {
@@ -57,8 +58,7 @@ class TypedValueTest {
   fun should_return_TypedValue_for_typedValueOrNullFor_with_non_null_raw_ID() {
     val result = TypedValue.typedValueOrNullFor("user-789", User::class)
 
-    assertThat(result).isNotNull()
-    assertThat(result!!.value).isEqualTo("user-789")
+    assertThat(result).isNotNull().transform { it.value }.isEqualTo("user-789")
   }
 
   @Test
@@ -150,8 +150,7 @@ class TypedValueTest {
 
     val result = userId.takeIfAboutType<String, User>()
 
-    assertThat(result).isNotNull()
-    assertThat(result!!.value).isEqualTo("user-123")
+    assertThat(result).isNotNull().transform { it.value }.isEqualTo("user-123")
   }
 
   @Test

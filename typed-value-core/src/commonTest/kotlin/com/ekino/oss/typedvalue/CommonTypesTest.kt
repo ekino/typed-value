@@ -7,6 +7,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isTrue
+import com.ekino.oss.typedvalue.TypedValue.Companion.toRawIds
 import kotlin.test.Test
 
 class CommonTypesTest {
