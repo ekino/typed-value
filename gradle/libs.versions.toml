@@ -10,7 +10,7 @@ springDataElasticsearch = "6.0.2"
 
 # Testing
 junit = "6.0.2"
-mockk = "1.14.7"
+mockk = "1.14.9"
 assertk = "0.28.1"
 assertj = "3.27.7"
 testcontainers = "1.21.4"
