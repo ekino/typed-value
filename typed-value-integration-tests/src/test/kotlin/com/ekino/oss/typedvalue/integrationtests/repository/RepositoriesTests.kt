@@ -8,6 +8,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
+import assertk.assertions.isPresent
 import com.ekino.oss.typedvalue.TypedInt
 import com.ekino.oss.typedvalue.TypedLong
 import com.ekino.oss.typedvalue.TypedString
@@ -67,7 +68,7 @@ class RepositoriesTests : AbstractIntegrationTest() {
       val savedPerson = personRepository.save(person)
 
       assertThat(savedPerson.id).isNotNull().given { personId ->
-        assertThat(personRepository.getReferenceById(personId)).all {
+        assertThat(personRepository.findById(personId)).isPresent().all {
           transform { it.id }
             .isNotNull()
             .all {
@@ -166,7 +167,7 @@ class RepositoriesTests : AbstractIntegrationTest() {
         assertThat(personId).isInstanceOf<TypedInt<IntPerson>>()
         assertThat(personId.type).isEqualTo(IntPerson::class)
 
-        assertThat(intPersonRepository.getReferenceById(personId)).all {
+        assertThat(intPersonRepository.findById(personId)).isPresent().all {
           transform { it.id }.isEqualTo(personId)
           transform { it.name }.isEqualTo("Int Person")
         }
@@ -198,7 +199,7 @@ class RepositoriesTests : AbstractIntegrationTest() {
         assertThat(personId).isInstanceOf<TypedLong<LongPerson>>()
         assertThat(personId.type).isEqualTo(LongPerson::class)
 
-        assertThat(longPersonRepository.getReferenceById(personId)).all {
+        assertThat(longPersonRepository.findById(personId)).isPresent().all {
           transform { it.id }.isEqualTo(personId)
           transform { it.name }.isEqualTo("Long Person")
         }
@@ -230,7 +231,7 @@ class RepositoriesTests : AbstractIntegrationTest() {
         assertThat(personId).isInstanceOf<TypedUuid<UuidPerson>>()
         assertThat(personId.type).isEqualTo(UuidPerson::class)
 
-        assertThat(uuidPersonRepository.getReferenceById(personId)).all {
+        assertThat(uuidPersonRepository.findById(personId)).isPresent().all {
           transform { it.id }.isEqualTo(personId)
           transform { it.name }.isEqualTo("Uuid Person")
         }
@@ -262,7 +263,7 @@ class RepositoriesTests : AbstractIntegrationTest() {
         assertThat(personId).isInstanceOf<TypedString<StringPerson>>()
         assertThat(personId.type).isEqualTo(StringPerson::class)
 
-        assertThat(stringPersonRepository.getReferenceById(personId)).all {
+        assertThat(stringPersonRepository.findById(personId)).isPresent().all {
           transform { it.id }.isEqualTo(personId)
           transform { it.name }.isEqualTo("String Person")
         }

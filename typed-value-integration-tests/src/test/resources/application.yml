@@ -1,0 +1,13 @@
+logging:
+  level:
+    org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: OFF
+# Uncomment for logging SQL commands
+#    org:
+#      hibernate:
+#        SQL: DEBUG
+# Uncomment for logging SQL request parameters
+#        type.descriptor.sql.BasicBinder: TRACE
+#        orm.jdbc.bind: TRACE
+# Uncomment for logging Elasticsearch REST requests
+#    tracer: TRACE
+
