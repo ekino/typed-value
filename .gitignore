@@ -4,8 +4,12 @@ build/
 !gradle-wrapper.jar
 *.hprof
 
+.claude/settings.local.json
+.claude/memory/
+
 # IDE
-.idea/
+.idea/*
+!.idea/icon.png
 *.iml
 *.ipr
 *.iws
@@ -27,7 +31,7 @@ Thumbs.db
 
 # Testing
 .kotlintest/
-.claude/
+.claude/projects/
 .kotlin/
 kotlin-js-store/
 
