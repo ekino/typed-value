@@ -13,7 +13,19 @@ You are preparing a release for the **Typed-Value** library. Follow these 8 step
 
 ## Step 1: Validate Prerequisites
 
-1. **Parse version argument**: The user must provide a version (e.g., `1.2.0`). If missing, ask for it. Validate it follows semver (`MAJOR.MINOR.PATCH` or with pre-release suffix like `-rc.1`).
+1. **Parse version argument**: The user may provide a version (e.g., `/release 1.2.0`).
+   - **If a version IS provided**: validate it follows semver (`MAJOR.MINOR.PATCH` or with pre-release suffix like `-rc.1`) and continue.
+   - **If NO version is provided**: determine it interactively:
+     1. Find the last release tag: `git describe --tags --abbrev=0`
+     2. Parse the current version from that tag (strip the `v` prefix).
+     3. Calculate the three semver bump options (patch, minor, major).
+     4. Use the `AskUserQuestion` tool to present an interactive picker:
+        - Option 1: **`X.Y.Z+1`** — description: "Patch (bug fixes, dependency updates)"
+        - Option 2: **`X.Y+1.0`** — description: "Minor (new features, backwards-compatible)"
+        - Option 3: **`X+1.0.0`** — description: "Major (breaking changes)"
+        - The built-in "Other" option lets the user type a custom version (e.g., `2.0.0-rc.1`).
+        - Use header: "Version" and question: "What version do you want to release?"
+     5. Validate the chosen or entered version follows semver.
 
 2. **Check current branch**: Must be `main`. If not, abort with a message.
    ```bash
