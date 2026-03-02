@@ -42,10 +42,10 @@ A lightweight Kotlin Multiplatform library providing type-safe wrappers for prim
 
 ```kotlin
 dependencies {
-  implementation("com.ekino.oss:typed-value-core:1.1.1")
+  implementation("com.ekino.oss:typed-value-core:1.1.2")
   // Optional integrations
-  implementation("com.ekino.oss:typed-value-jackson:1.1.1")
-  implementation("com.ekino.oss:typed-value-spring:1.1.1")
+  implementation("com.ekino.oss:typed-value-jackson:1.1.2")
+  implementation("com.ekino.oss:typed-value-spring:1.1.2")
 }
 ```
 
