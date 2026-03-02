@@ -94,7 +94,11 @@ class TypedValueDeserializer(
     }
     return getTypedValueClass(javaType).let {
       val valueType = it.containedType(0)
-      require(valueType != null && valueType.rawClass != Any::class.java) {
+      require(
+        valueType != null &&
+          valueType.rawClass != Any::class.java &&
+          valueType.rawClass != Comparable::class.java
+      ) {
         """Cannot resolve value type parameter for property '$propertyName' with TypedValue subtype: ${javaType.rawClass.simpleName}. 
           |Please provide a valid type parameter (not Any or *)."""
           .trimMargin()
