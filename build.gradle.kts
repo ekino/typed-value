@@ -87,11 +87,11 @@ subprojects {
         target("**/*.kt")
         targetExclude("**/build/**")
         licenseHeader(licenseHeaderText)
-        ktfmt().googleStyle()
+        ktfmt("0.62").googleStyle()
       }
       kotlinGradle {
         target("*.gradle.kts")
-        ktfmt().googleStyle()
+        ktfmt("0.62").googleStyle()
       }
       java {
         target("**/*.java")

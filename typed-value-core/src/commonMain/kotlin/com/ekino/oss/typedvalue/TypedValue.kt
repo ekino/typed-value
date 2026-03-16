@@ -134,7 +134,9 @@ open class TypedValue<VALUE : Comparable<VALUE>, T : Any>(
      */
     @JvmStatic
     fun <ID : Comparable<ID>> rawIds(typedValues: Iterable<TypedValue<ID, *>>): List<ID> =
-      typedValues.map { it.value }
+      typedValues.map {
+        it.value
+      }
 
     /**
      * Extension version of [rawIds] for Kotlin collection syntax.
