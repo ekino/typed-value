@@ -31,6 +31,8 @@ class TypedValueJacksonTest {
 
   class Order
 
+  interface Identifiable
+
   // Custom TypedValue subclasses for testing
   class TypedId<T : Any>(id: String, type: KClass<T>) : TypedString<T>(id, type)
 
@@ -696,6 +698,80 @@ class TypedValueJacksonTest {
       }
   }
 
+  // ==================== Interface Entity Type Tests ====================
+
+  @Test
+  fun `should serialize TypedValue with interface entity type`() {
+    val dto = InterfaceStringDto(id = TypedValue.typedValueFor("iface-123", Identifiable::class))
+
+    val json = objectMapper.writeValueAsString(dto)
+
+    assertThat(json).isEqualTo("""{"id":"iface-123"}""")
+  }
+
+  @Test
+  fun `should deserialize TypedValue with interface entity type`() {
+    val json = """{"id":"iface-456"}"""
+
+    val dto = objectMapper.readValue<InterfaceStringDto>(json)
+
+    assertThat(dto.id.value).isEqualTo("iface-456")
+    assertThat(dto.id.type).isEqualTo(Identifiable::class)
+  }
+
+  @Test
+  fun `should serialize and deserialize TypedString with interface entity type`() {
+    val dto = InterfaceTypedStringDto(id = TypedString.of("str-iface", Identifiable::class))
+
+    val json = objectMapper.writeValueAsString(dto)
+    assertThat(json).isEqualTo("""{"id":"str-iface"}""")
+
+    val deserialized = objectMapper.readValue<InterfaceTypedStringDto>(json)
+    assertThat(deserialized.id).isInstanceOf(TypedString::class)
+    assertThat(deserialized.id.value).isEqualTo("str-iface")
+    assertThat(deserialized.id.type).isEqualTo(Identifiable::class)
+  }
+
+  @Test
+  fun `should serialize and deserialize TypedLong with interface entity type`() {
+    val dto = InterfaceTypedLongDto(id = TypedLong.of(42L, Identifiable::class))
+
+    val json = objectMapper.writeValueAsString(dto)
+    assertThat(json).isEqualTo("""{"id":42}""")
+
+    val deserialized = objectMapper.readValue<InterfaceTypedLongDto>(json)
+    assertThat(deserialized.id).isInstanceOf(TypedLong::class)
+    assertThat(deserialized.id.value).isEqualTo(42L)
+    assertThat(deserialized.id.type).isEqualTo(Identifiable::class)
+  }
+
+  @Test
+  fun `should serialize and deserialize TypedInt with interface entity type`() {
+    val dto = InterfaceTypedIntDto(id = TypedInt.of(7, Identifiable::class))
+
+    val json = objectMapper.writeValueAsString(dto)
+    assertThat(json).isEqualTo("""{"id":7}""")
+
+    val deserialized = objectMapper.readValue<InterfaceTypedIntDto>(json)
+    assertThat(deserialized.id).isInstanceOf(TypedInt::class)
+    assertThat(deserialized.id.value).isEqualTo(7)
+    assertThat(deserialized.id.type).isEqualTo(Identifiable::class)
+  }
+
+  @Test
+  fun `should serialize and deserialize TypedUuid with interface entity type`() {
+    val uuid = UUID.fromString("550e8400-e29b-41d4-a716-446655440000")
+    val dto = InterfaceTypedUuidDto(id = TypedUuid.of(uuid, Identifiable::class))
+
+    val json = objectMapper.writeValueAsString(dto)
+    assertThat(json).isEqualTo("""{"id":"550e8400-e29b-41d4-a716-446655440000"}""")
+
+    val deserialized = objectMapper.readValue<InterfaceTypedUuidDto>(json)
+    assertThat(deserialized.id).isInstanceOf(TypedUuid::class)
+    assertThat(deserialized.id.value).isEqualTo(uuid)
+    assertThat(deserialized.id.type).isEqualTo(Identifiable::class)
+  }
+
   // ==================== Nullable TypedValue Tests ====================
 
   @Test
@@ -950,4 +1026,15 @@ class TypedValueJacksonTest {
   class CustomTypedString<T : Any>(value: String, type: KClass<T>) : TypedString<T>(value, type)
 
   data class CustomStringDto(val id: CustomTypedString<User>)
+
+  // Interface entity type DTOs
+  data class InterfaceStringDto(val id: TypedValue<String, Identifiable>)
+
+  data class InterfaceTypedStringDto(val id: TypedString<Identifiable>)
+
+  data class InterfaceTypedLongDto(val id: TypedLong<Identifiable>)
+
+  data class InterfaceTypedIntDto(val id: TypedInt<Identifiable>)
+
+  data class InterfaceTypedUuidDto(val id: TypedUuid<Identifiable>)
 }
