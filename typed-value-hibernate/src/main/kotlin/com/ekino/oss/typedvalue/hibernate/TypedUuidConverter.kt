@@ -56,6 +56,7 @@ abstract class TypedUuidConverter<T : Any>(private val entityType: KClass<T>) :
 
   override fun convertToDatabaseColumn(attribute: TypedUuid<T>?): UUID? = attribute?.value
 
-  override fun convertToEntityAttribute(dbData: UUID?): TypedUuid<T>? =
-    dbData?.let { TypedUuid.of(it, entityType) }
+  override fun convertToEntityAttribute(dbData: UUID?): TypedUuid<T>? = dbData?.let {
+    TypedUuid.of(it, entityType)
+  }
 }

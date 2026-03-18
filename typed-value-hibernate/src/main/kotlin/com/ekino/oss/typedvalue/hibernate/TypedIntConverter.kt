@@ -55,6 +55,7 @@ abstract class TypedIntConverter<T : Any>(private val entityType: KClass<T>) :
 
   override fun convertToDatabaseColumn(attribute: TypedInt<T>?): Int? = attribute?.value
 
-  override fun convertToEntityAttribute(dbData: Int?): TypedInt<T>? =
-    dbData?.let { TypedInt.of(it, entityType) }
+  override fun convertToEntityAttribute(dbData: Int?): TypedInt<T>? = dbData?.let {
+    TypedInt.of(it, entityType)
+  }
 }

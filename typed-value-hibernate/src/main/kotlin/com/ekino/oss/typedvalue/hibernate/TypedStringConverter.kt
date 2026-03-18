@@ -54,6 +54,7 @@ abstract class TypedStringConverter<T : Any>(private val entityType: KClass<T>) 
 
   override fun convertToDatabaseColumn(attribute: TypedString<T>?): String? = attribute?.value
 
-  override fun convertToEntityAttribute(dbData: String?): TypedString<T>? =
-    dbData?.let { TypedString.of(it, entityType) }
+  override fun convertToEntityAttribute(dbData: String?): TypedString<T>? = dbData?.let {
+    TypedString.of(it, entityType)
+  }
 }

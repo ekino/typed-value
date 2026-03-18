@@ -55,6 +55,7 @@ abstract class TypedLongConverter<T : Any>(private val entityType: KClass<T>) :
 
   override fun convertToDatabaseColumn(attribute: TypedLong<T>?): Long? = attribute?.value
 
-  override fun convertToEntityAttribute(dbData: Long?): TypedLong<T>? =
-    dbData?.let { TypedLong.of(it, entityType) }
+  override fun convertToEntityAttribute(dbData: Long?): TypedLong<T>? = dbData?.let {
+    TypedLong.of(it, entityType)
+  }
 }
