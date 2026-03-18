@@ -9,14 +9,6 @@ plugins {
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
-// TODO: Remove when upgrading to Kotlin 2.3.20+ (kotlin.plugin.jpa will apply allOpen
-// automatically)
-allOpen {
-  annotation("jakarta.persistence.Entity")
-  annotation("jakarta.persistence.MappedSuperclass")
-  annotation("jakarta.persistence.Embeddable")
-}
-
 repositories { mavenCentral() }
 
 dependencies {
