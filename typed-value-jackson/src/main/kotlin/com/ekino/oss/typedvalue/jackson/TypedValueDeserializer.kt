@@ -104,7 +104,9 @@ class TypedValueDeserializer(
           .trimMargin()
       }
       val entityType = it.containedType(1)
-      require(entityType != null && entityType.rawClass != Any::class.java) {
+      require(
+        entityType != null && (entityType.isInterface || entityType.rawClass != Any::class.java)
+      ) {
         """Cannot resolve entity type parameter for property '$propertyName' with TypedValue subtype: ${javaType.rawClass.simpleName}.
             |Please provide a valid type parameter (not Any or *)."""
           .trimMargin()
@@ -179,12 +181,16 @@ class TypedValueDeserializer(
       return when {
         TypedUuid::class.java.isAssignableFrom(targetType) ->
           TypedUuid.of(rawValue as UUID, entityKClass)
+
         TypedString::class.java.isAssignableFrom(targetType) ->
           TypedString.of(rawValue as String, entityKClass)
+
         TypedLong::class.java.isAssignableFrom(targetType) ->
           TypedLong.of(rawValue as Long, entityKClass)
+
         TypedInt::class.java.isAssignableFrom(targetType) ->
           TypedInt.of(rawValue as Int, entityKClass)
+
         else -> TypedValue(rawValue as Comparable<Any>, entityKClass)
       }
     }
@@ -204,8 +210,10 @@ class TypedValueDeserializer(
         String::class.java -> jsonParser.string
         Long::class.java,
         Long::class.javaObjectType -> jsonParser.longValue
+
         Int::class.java,
         Int::class.javaObjectType -> jsonParser.intValue
+
         UUID::class.java -> UUID.fromString(jsonParser.string)
         else -> jsonParser.string // Default to string for other Comparable types
       }
