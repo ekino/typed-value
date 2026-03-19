@@ -68,8 +68,9 @@ subprojects {
   if (name != "typescript-integration") {
     apply(plugin = "com.diffplug.spotless")
   }
-  // Skip detekt for integration-tests due to Kotlin version compatibility
-  if (name !in nonPublishableModules) {
+
+  // Skip detekt for typescript-integration (no Kotlin sources)
+  if (name != "typescript-integration") {
     apply(plugin = "io.gitlab.arturbosch.detekt")
   }
 
@@ -108,7 +109,7 @@ subprojects {
     }
   }
 
-  if (name !in nonPublishableModules) {
+  if (name != "typescript-integration") {
     configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
       buildUponDefaultConfig = true
       allRules = false

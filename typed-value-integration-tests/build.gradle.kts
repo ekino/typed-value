@@ -9,6 +9,17 @@ plugins {
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
+// Prevent Spring Dependency Management from overriding Kotlin version in detekt's classpath
+configurations
+  .matching { it.name == "detekt" }
+  .all {
+    resolutionStrategy.eachDependency {
+      if (requested.group == "org.jetbrains.kotlin") {
+        useVersion(io.gitlab.arturbosch.detekt.getSupportedKotlinVersion())
+      }
+    }
+  }
+
 repositories { mavenCentral() }
 
 dependencies {
