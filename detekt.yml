@@ -37,4 +37,6 @@ style:
     maxLineLength: 140
   ReturnCount:
     max: 3
-    excludedFunctions: 'equals'
+    excludedFunctions: [ 'equals' ]
+  UnnecessaryAbstractClass:
+    excludes: ['**/typedvalue/hibernate/*.kt','**/typedvalue/hibernate/entity/*.kt', '**/gradle/*.kt']

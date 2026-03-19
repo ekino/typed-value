@@ -8,6 +8,7 @@ import org.springframework.boot.runApplication
 
 @SpringBootApplication class IntegrationTestApplication
 
+@Suppress("SpreadOperator")
 fun main(args: Array<String>) {
   runApplication<IntegrationTestApplication>(*args)
 }
