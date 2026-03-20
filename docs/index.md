@@ -85,6 +85,13 @@ addBananas(apples) // Compilation error!
 Add the dependency to your `build.gradle.kts`:
 
 ::: code-group
+```kotlin-vue [Using BOM (recommended)]
+dependencies {
+    implementation(platform("com.ekino.oss:typed-value-bom:{{ v.typedValue }}"))
+    implementation("com.ekino.oss:typed-value-core")
+}
+```
+
 ```kotlin-vue [Kotlin Multiplatform]
 kotlin {
     sourceSets {
@@ -137,6 +144,7 @@ data class CartItem(
 
 | Module | Platform | Description |
 |--------|----------|-------------|
+| `typed-value-bom` | All | BOM (Bill of Materials) for consistent versioning |
 | `typed-value-core` | JVM, JS, Native | Core TypedValue types with zero dependencies |
 | `typed-value-jackson` | JVM | JSON serialization/deserialization |
 | `typed-value-spring` | JVM | Spring MVC path variable & request param converters |

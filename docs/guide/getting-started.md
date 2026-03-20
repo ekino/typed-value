@@ -8,11 +8,63 @@ This guide will help you add typed-value to your project and start using type-sa
 
 ## Installation
 
-### Kotlin Multiplatform
+### Using the BOM (recommended) {#bom}
 
-For multiplatform projects targeting JVM, JS, or Native:
+The BOM (Bill of Materials) lets you declare a single versioned dependency and omit versions on individual modules:
 
-```kotlin-vue
+::: code-group
+```kotlin-vue [Gradle Kotlin DSL]
+dependencies {
+    implementation(platform("com.ekino.oss:typed-value-bom:{{ v.typedValue }}"))
+    implementation("com.ekino.oss:typed-value-core")
+    // Add any integration modules without versions
+    implementation("com.ekino.oss:typed-value-jackson")
+    implementation("com.ekino.oss:typed-value-spring")
+}
+```
+
+```groovy-vue [Gradle Groovy]
+dependencies {
+    implementation platform('com.ekino.oss:typed-value-bom:{{ v.typedValue }}')
+    implementation 'com.ekino.oss:typed-value-core'
+    implementation 'com.ekino.oss:typed-value-jackson'
+}
+```
+
+```xml-vue [Maven]
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.ekino.oss</groupId>
+            <artifactId>typed-value-bom</artifactId>
+            <version>{{ v.typedValue }}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    <dependency>
+        <groupId>com.ekino.oss</groupId>
+        <artifactId>typed-value-core</artifactId>
+    </dependency>
+</dependencies>
+```
+:::
+
+### Without the BOM
+
+::: code-group
+```kotlin-vue [Gradle Kotlin DSL]
+dependencies {
+    implementation("com.ekino.oss:typed-value-core:{{ v.typedValue }}")
+    implementation("com.ekino.oss:typed-value-jackson:{{ v.typedValue }}")
+    implementation("com.ekino.oss:typed-value-spring:{{ v.typedValue }}")
+}
+```
+
+```kotlin-vue [Kotlin Multiplatform]
 kotlin {
     sourceSets {
         commonMain {
@@ -24,31 +76,34 @@ kotlin {
 }
 ```
 
-### JVM Only (Gradle Kotlin DSL)
-
-```kotlin-vue
-dependencies {
-    implementation("com.ekino.oss:typed-value-core:{{ v.typedValue }}")
-}
-```
-
-### JVM Only (Gradle Groovy)
-
-```groovy-vue
+```groovy-vue [Gradle Groovy]
 dependencies {
     implementation 'com.ekino.oss:typed-value-core:{{ v.typedValue }}'
+    implementation 'com.ekino.oss:typed-value-jackson:{{ v.typedValue }}'
+    implementation 'com.ekino.oss:typed-value-spring:{{ v.typedValue }}'
 }
 ```
 
-### Maven
-
-```xml-vue
-<dependency>
-    <groupId>com.ekino.oss</groupId>
-    <artifactId>typed-value-core</artifactId>
-    <version>{{ v.typedValue }}</version>
-</dependency>
+```xml-vue [Maven]
+<dependencies>
+    <dependency>
+        <groupId>com.ekino.oss</groupId>
+        <artifactId>typed-value-core</artifactId>
+        <version>{{ v.typedValue }}</version>
+    </dependency>
+    <dependency>
+        <groupId>com.ekino.oss</groupId>
+        <artifactId>typed-value-jackson</artifactId>
+        <version>{{ v.typedValue }}</version>
+    </dependency>
+    <dependency>
+        <groupId>com.ekino.oss</groupId>
+        <artifactId>typed-value-spring</artifactId>
+        <version>{{ v.typedValue }}</version>
+    </dependency>
+</dependencies>
 ```
+:::
 
 ## Basic Usage
 
@@ -151,9 +206,34 @@ addBananas(apples)   // ❌ Compilation error!
 
 ## Adding Framework Integrations
 
-For full-stack applications, add the integration modules you need:
+For full-stack applications, add the integration modules you need. Using the [BOM](#bom) is the recommended approach:
 
-```kotlin-vue
+::: code-group
+```kotlin-vue [With BOM (recommended)]
+dependencies {
+    implementation(platform("com.ekino.oss:typed-value-bom:{{ v.typedValue }}"))
+
+    // Core (required)
+    implementation("com.ekino.oss:typed-value-core")
+
+    // JSON serialization
+    implementation("com.ekino.oss:typed-value-jackson")
+
+    // Spring MVC support
+    implementation("com.ekino.oss:typed-value-spring")
+
+    // QueryDSL support
+    implementation("com.ekino.oss:typed-value-querydsl")
+
+    // Hibernate/JPA support
+    implementation("com.ekino.oss:typed-value-hibernate")
+
+    // Elasticsearch support
+    implementation("com.ekino.oss:typed-value-spring-data-elasticsearch")
+}
+```
+
+```kotlin-vue [Without BOM]
 dependencies {
     // Core (required)
     implementation("com.ekino.oss:typed-value-core:{{ v.typedValue }}")
@@ -174,6 +254,7 @@ dependencies {
     implementation("com.ekino.oss:typed-value-spring-data-elasticsearch:{{ v.typedValue }}")
 }
 ```
+:::
 
 See the [Integrations](/integrations/jackson) section for detailed setup instructions.
 

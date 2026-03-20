@@ -14,6 +14,9 @@ plugins {
 // Modules that should not be published to Maven
 val nonPublishableModules = listOf("typed-value-integration-tests", "typescript-integration")
 
+// Modules without Kotlin/Java sources (excluded from kotlin plugin, spotless, detekt)
+val noSourceModules = listOf("typescript-integration", "typed-value-bom")
+
 allprojects {
   group = "com.ekino.oss"
   version =
@@ -55,7 +58,7 @@ allprojects {
 
 subprojects {
   // typed-value-core uses kotlin-multiplatform, integration-tests defines its own plugins
-  if (name != "typed-value-core" && name !in nonPublishableModules) {
+  if (name != "typed-value-core" && name !in nonPublishableModules && name !in noSourceModules) {
     apply(plugin = "org.jetbrains.kotlin.jvm")
   }
 
@@ -64,17 +67,17 @@ subprojects {
     apply(plugin = "com.vanniktech.maven.publish")
   }
 
-  // Skip spotless and detekt for typescript-integration (no Kotlin sources)
-  if (name != "typescript-integration") {
+  // Skip spotless and detekt for modules without Kotlin/Java sources
+  if (name !in noSourceModules) {
     apply(plugin = "com.diffplug.spotless")
   }
 
-  // Skip detekt for typescript-integration (no Kotlin sources)
-  if (name != "typescript-integration") {
+  // Skip detekt for modules without Kotlin/Java sources
+  if (name !in noSourceModules) {
     apply(plugin = "io.gitlab.arturbosch.detekt")
   }
 
-  if (name != "typescript-integration") {
+  if (name !in noSourceModules) {
     configure<com.diffplug.gradle.spotless.SpotlessExtension> {
       val licenseHeaderText =
         """
@@ -109,7 +112,7 @@ subprojects {
     }
   }
 
-  if (name != "typescript-integration") {
+  if (name !in noSourceModules) {
     configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
       buildUponDefaultConfig = true
       allRules = false
@@ -118,7 +121,7 @@ subprojects {
   }
 
   // JVM-specific configuration (exclude multiplatform and integration tests)
-  if (name != "typed-value-core" && name !in nonPublishableModules) {
+  if (name != "typed-value-core" && name !in nonPublishableModules && name !in noSourceModules) {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
       compilerOptions {
         freeCompilerArgs.add("-Xjsr305=strict")

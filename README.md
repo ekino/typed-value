@@ -40,6 +40,22 @@ A lightweight Kotlin Multiplatform library providing type-safe wrappers for prim
 
 ### Installation
 
+#### Using the BOM (recommended)
+
+The BOM (Bill of Materials) lets you declare a single versioned dependency and omit versions on individual modules:
+
+```kotlin
+dependencies {
+  implementation(platform("com.ekino.oss:typed-value-bom:1.2.0"))
+  implementation("com.ekino.oss:typed-value-core")
+  // Optional integrations — no version needed
+  implementation("com.ekino.oss:typed-value-jackson")
+  implementation("com.ekino.oss:typed-value-spring")
+}
+```
+
+#### Without the BOM
+
 ```kotlin
 dependencies {
   implementation("com.ekino.oss:typed-value-core:1.2.0")
