@@ -1,6 +1,7 @@
 rootProject.name = "typed-value"
 
 include(
+  "typed-value-bom",
   "typed-value-core",
   "typed-value-jackson",
   "typed-value-hibernate",
