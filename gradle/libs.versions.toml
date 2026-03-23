@@ -14,7 +14,7 @@ mockk = "1.14.9"
 assertk = "0.28.1"
 assertj = "3.27.7"
 testcontainers = "1.21.4"
-testcontainersPostgresql = "2.0.3"
+testcontainersPostgresql = "2.0.4"
 datafaker = "2.5.4"
 
 # Code quality
