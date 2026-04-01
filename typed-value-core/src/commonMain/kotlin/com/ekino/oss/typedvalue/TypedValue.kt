@@ -54,9 +54,11 @@ open class TypedValue<VALUE : Comparable<VALUE>, T : Any>(
   open val value: VALUE,
   /** The runtime type of the entity this identifier represents */
   open val type: KClass<out T>,
-) : Comparable<TypedValue<VALUE, T>> {
+) : Comparable<TypedValue<VALUE, T>>, PlatformSerializable {
 
   companion object {
+    private const val serialVersionUID: Long = 1L
+
     /**
      * Creates a TypedValue from an identifier value and entity type.
      *
