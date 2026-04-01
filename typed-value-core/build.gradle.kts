@@ -5,6 +5,8 @@ plugins {
 }
 
 kotlin {
+  compilerOptions { freeCompilerArgs.add("-Xexpect-actual-classes") }
+
   // Target platforms
   jvm { testRuns["test"].executionTask.configure { useJUnitPlatform() } }
 
