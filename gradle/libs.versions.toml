@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.3.21"
 kotlinJvm = "2.3.21"
-springBoot = "4.0.5"
+springBoot = "4.0.6"
 springDependencyManagement = "1.1.7"
 jackson = "3.1.2"
 querydsl = "5.1.0"
