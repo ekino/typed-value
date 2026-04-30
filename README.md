@@ -46,7 +46,7 @@ The BOM (Bill of Materials) lets you declare a single versioned dependency and o
 
 ```kotlin
 dependencies {
-  implementation(platform("com.ekino.oss:typed-value-bom:1.3.0"))
+  implementation(platform("com.ekino.oss:typed-value-bom:1.3.1"))
   implementation("com.ekino.oss:typed-value-core")
   // Optional integrations — no version needed
   implementation("com.ekino.oss:typed-value-jackson")
@@ -58,10 +58,10 @@ dependencies {
 
 ```kotlin
 dependencies {
-  implementation("com.ekino.oss:typed-value-core:1.3.0")
+  implementation("com.ekino.oss:typed-value-core:1.3.1")
   // Optional integrations
-  implementation("com.ekino.oss:typed-value-jackson:1.3.0")
-  implementation("com.ekino.oss:typed-value-spring:1.3.0")
+  implementation("com.ekino.oss:typed-value-jackson:1.3.1")
+  implementation("com.ekino.oss:typed-value-spring:1.3.1")
 }
 ```
 
