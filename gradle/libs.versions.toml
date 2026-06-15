@@ -5,7 +5,7 @@ springBoot = "4.1.0"
 springDependencyManagement = "1.1.7"
 jackson = "3.1.4"
 querydsl = "5.1.0"
-querydslFeign = "7.2"
+querydslFeign = "7.3.0"
 springDataElasticsearch = "6.1.0"
 
 # Testing
