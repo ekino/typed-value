@@ -7,6 +7,10 @@ plugins {
 kotlin {
   compilerOptions { freeCompilerArgs.add("-Xexpect-actual-classes") }
 
+  // Pin the toolchain so Kotlin and Java tasks target the same JVM regardless of the JDK
+  // running Gradle (otherwise a newer launcher JDK leaks into the JVM target and breaks the build)
+  jvmToolchain(21)
+
   // Target platforms
   jvm { testRuns["test"].executionTask.configure { useJUnitPlatform() } }
 
