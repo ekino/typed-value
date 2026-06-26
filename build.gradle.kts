@@ -50,7 +50,7 @@ allprojects {
             }
       }
       // Local development - ALWAYS use localVersion from gradle.properties
-      else -> project.findProperty("localVersion") as String? ?: "1.3.3-SNAPSHOT"
+      else -> project.findProperty("localVersion") as String? ?: "1.3.4-SNAPSHOT"
     }
 
   repositories { mavenCentral() }
@@ -118,6 +118,8 @@ subprojects {
       allRules = false
       config.setFrom(files("$rootDir/detekt.yml"))
     }
+    // Pin detekt's JVM target so analysis works regardless of the JDK running Gradle
+    tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach { jvmTarget = "21" }
   }
 
   // JVM-specific configuration (exclude multiplatform and integration tests)
