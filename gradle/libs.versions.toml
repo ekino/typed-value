@@ -18,7 +18,7 @@ testcontainersPostgresql = "2.0.5"
 datafaker = "2.5.4"
 
 # Code quality
-spotless = "8.6.0"
+spotless = "8.7.0"
 detekt = "1.23.8"
 
 # Publishing
