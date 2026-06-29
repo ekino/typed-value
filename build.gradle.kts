@@ -50,7 +50,7 @@ allprojects {
             }
       }
       // Local development - ALWAYS use localVersion from gradle.properties
-      else -> project.findProperty("localVersion") as String? ?: "1.3.4-SNAPSHOT"
+      else -> project.findProperty("localVersion") as String? ?: "1.3.5-SNAPSHOT"
     }
 
   repositories { mavenCentral() }
