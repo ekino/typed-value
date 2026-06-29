@@ -9,7 +9,7 @@ querydslFeign = "7.3.0"
 springDataElasticsearch = "6.1.0"
 
 # Testing
-junit = "6.1.0"
+junit = "6.1.1"
 mockk = "1.14.11"
 assertk = "0.28.1"
 assertj = "3.27.7"
