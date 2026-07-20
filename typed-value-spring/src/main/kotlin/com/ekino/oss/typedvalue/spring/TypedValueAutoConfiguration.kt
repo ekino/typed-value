@@ -11,9 +11,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 /**
  * Spring Boot Auto-configuration for TypedValue support.
  *
- * This configuration automatically registers the StringToTypedValueConverter when the application
- * starts, enabling automatic conversion of path variables and request parameters to TypedValue
- * instances.
+ * This configuration automatically registers the [StringToTypedValueConverter] and
+ * [TypedValueToStringConverter] when the application starts, enabling automatic conversion of path
+ * variables and request parameters from/to TypedValue instances.
  *
  * To use, simply add this module to your classpath. Spring Boot will automatically detect and apply
  * this configuration.
@@ -24,6 +24,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
  * class MyConfig : WebMvcConfigurer {
  *   override fun addFormatters(registry: FormatterRegistry) {
  *     registry.addConverter(StringToTypedValueConverter())
+ *     registry.addConverter(TypedValueToStringConverter())
  *   }
  * }
  * ```
@@ -35,7 +36,12 @@ open class TypedValueAutoConfiguration : WebMvcConfigurer {
   open fun stringToTypedValueConverter(): StringToTypedValueConverter =
     StringToTypedValueConverter()
 
+  @Bean
+  open fun typedValueToStringConverter(): TypedValueToStringConverter =
+    TypedValueToStringConverter()
+
   override fun addFormatters(registry: FormatterRegistry) {
     registry.addConverter(stringToTypedValueConverter())
+    registry.addConverter(typedValueToStringConverter())
   }
 }
