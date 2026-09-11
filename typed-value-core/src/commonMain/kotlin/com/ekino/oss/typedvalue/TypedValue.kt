@@ -52,9 +52,16 @@ import kotlin.reflect.KClass
 open class TypedValue<VALUE : Comparable<VALUE>, T : Any>(
   /** The underlying identifier value (e.g., "user-123", 42L, UUID) */
   open val value: VALUE,
-  /** The runtime type of the entity this identifier represents */
-  open val type: KClass<out T>,
+  type: KClass<out T>,
 ) : Comparable<TypedValue<VALUE, T>>, PlatformSerializable {
+
+  // Stored through a platform-specific serializable holder: on JVM a KClass instance is not
+  // java.io.Serializable, which would make every TypedValue fail Java serialization.
+  private val typeRef: PlatformTypeRef<T> = PlatformTypeRef(type)
+
+  /** The runtime type of the entity this identifier represents */
+  open val type: KClass<out T>
+    get() = typeRef.kClass
 
   companion object {
     private const val serialVersionUID: Long = 1L
