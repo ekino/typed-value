@@ -14,8 +14,18 @@
     "@ekino/typed-value": "file:../typed-value-core/build/dist/js/productionLibrary"
   },
   "devDependencies": {
-    "@vitest/ui": "^2.1.8",
+    "@vitest/ui": "^4.1.11",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vite": "^7.3.6",
+    "vitest": "^4.1.11"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss": "^8.5.23",
+      "rollup": "^4.59.0",
+      "nanoid": "^3.3.12",
+      "picomatch": "^4.0.4",
+      "fflate": "^0.8.3"
+    }
   }
 }
