@@ -56,7 +56,7 @@ dependencies {
   testRuntimeOnly(libs.postgresql)
 }
 
-kotlin { compilerOptions { freeCompilerArgs.addAll("-Xjsr305=strict", "-Xcontext-parameters") } }
+kotlin { compilerOptions { freeCompilerArgs.addAll("-Xjsr305=strict") } }
 
 tasks.withType<Test> { useJUnitPlatform() }
 

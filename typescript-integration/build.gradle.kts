@@ -34,8 +34,8 @@ tasks.named("pnpmInstall") {
 }
 
 // Task: Run TypeScript type checking
-val typeCheck by
-  tasks.registering(PnpmTask::class) {
+val typeCheck =
+  tasks.register<PnpmTask>("typeCheck") {
     description = "Run TypeScript type checking"
     group = "typescript"
 
@@ -49,8 +49,8 @@ val typeCheck by
   }
 
 // Task: Run Vitest tests
-val pnpmTest by
-  tasks.registering(PnpmTask::class) {
+val pnpmTest =
+  tasks.register<PnpmTask>("pnpmTest") {
     description = "Run TypeScript integration tests with Vitest"
     group = "typescript"
 
