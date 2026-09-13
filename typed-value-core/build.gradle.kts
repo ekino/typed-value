@@ -42,33 +42,27 @@ kotlin {
   // iosSimulatorArm64()
 
   sourceSets {
-    val commonMain by getting {
+    commonMain {
       dependencies {
         implementation(libs.kotlin.stdlib)
         implementation(libs.kotlin.reflect)
       }
     }
 
-    val commonTest by getting {
+    commonTest {
       dependencies {
         implementation(kotlin("test"))
         implementation(libs.assertk)
       }
     }
 
-    val jvmMain by getting
-
-    val jvmTest by getting {
+    jvmTest {
       dependencies {
         implementation(libs.junit.jupiter.api)
         implementation(libs.junit.jupiter.engine)
         implementation(libs.assertj)
       }
     }
-
-    val jsMain by getting
-
-    val jsTest by getting
   }
 }
 
@@ -76,7 +70,7 @@ kotlin {
  * Task to add phantom type parameters to generated TypeScript declarations. This enables
  * compile-time type safety in TypeScript without runtime overhead.
  */
-val addPhantomTypes by tasks.registering {
+tasks.register("addPhantomTypes") {
   description = "Adds phantom type parameters to TypeScript declarations for compile-time safety"
   group = "build"
 
@@ -145,6 +139,6 @@ val addPhantomTypes by tasks.registering {
 }
 
 // Hook the phantom types task into the build process
-tasks.named("jsNodeProductionLibraryDistribution") { finalizedBy(addPhantomTypes) }
+tasks.named("jsNodeProductionLibraryDistribution") { finalizedBy("addPhantomTypes") }
 
-tasks.named("jsBrowserProductionLibraryDistribution") { finalizedBy(addPhantomTypes) }
+tasks.named("jsBrowserProductionLibraryDistribution") { finalizedBy("addPhantomTypes") }
