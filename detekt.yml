@@ -1,13 +1,9 @@
-build:
-  maxIssues: 0
-  excludeCorrectable: false
-
 config:
   validation: true
   warningsAsErrors: false
 
 comments:
-  CommentOverPrivateFunction:
+  DocumentationOverPrivateFunction:
     active: false
   UndocumentedPublicClass:
     active: false
@@ -15,11 +11,13 @@ comments:
     active: false
 
 complexity:
+  # detekt 2.x counts "allowed" values exclusively, where 1.x thresholds were inclusive:
+  # allowedComplexity: 19 == threshold: 20
   CyclomaticComplexMethod:
-    threshold: 20
+    allowedComplexity: 19
   LongParameterList:
-    functionThreshold: 8
-    constructorThreshold: 10
+    allowedFunctionParameters: 7
+    allowedConstructorParameters: 9
   TooManyFunctions:
     active: false
 
@@ -38,5 +36,8 @@ style:
   ReturnCount:
     max: 3
     excludedFunctions: [ 'equals' ]
-  UnnecessaryAbstractClass:
+  # UnnecessaryAbstractClass was split in two in detekt 2.x
+  AbstractClassCanBeConcreteClass:
+    excludes: ['**/typedvalue/hibernate/*.kt','**/typedvalue/hibernate/entity/*.kt', '**/gradle/*.kt']
+  AbstractClassCanBeInterface:
     excludes: ['**/typedvalue/hibernate/*.kt','**/typedvalue/hibernate/entity/*.kt', '**/gradle/*.kt']

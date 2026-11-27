@@ -44,7 +44,9 @@ class StringToTypedValueConverter : GenericConverter {
       GenericConverter.ConvertiblePair(String::class.java, TypedUuid::class.java),
     )
 
-  @Suppress("UNCHECKED_CAST")
+  // ThrowsCount: each branch reports its own conversion failure; detekt 2.x no longer exempts
+  // overridden functions from this rule
+  @Suppress("UNCHECKED_CAST", "ThrowsCount")
   override fun convert(source: Any?, sourceType: TypeDescriptor, targetType: TypeDescriptor): Any? {
     if (source == null) return null
     if (source !is String) {

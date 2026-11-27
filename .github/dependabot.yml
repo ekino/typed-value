@@ -30,7 +30,7 @@ updates:
       code-quality:
         patterns:
           - "com.diffplug.spotless*"
-          - "io.gitlab.arturbosch.detekt*"
+          - "dev.detekt*"
         update-types:
           - "minor"
           - "patch"
@@ -64,7 +64,7 @@ updates:
       - dependency-name: "com.diffplug.spotless:*"
         update-types: ["version-update:semver-major"]
 
-      - dependency-name: "io.gitlab.arturbosch.detekt:*"
+      - dependency-name: "dev.detekt:*"
         update-types: ["version-update:semver-major"]
 
     # Customize PR labels

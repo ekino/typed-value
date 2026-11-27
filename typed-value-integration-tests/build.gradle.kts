@@ -15,7 +15,7 @@ configurations
   .all {
     resolutionStrategy.eachDependency {
       if (requested.group == "org.jetbrains.kotlin") {
-        useVersion(io.gitlab.arturbosch.detekt.getSupportedKotlinVersion())
+        useVersion(dev.detekt.gradle.plugin.getSupportedKotlinVersion())
       }
     }
   }
