@@ -419,7 +419,9 @@ internal class TypedValueElasticPersistentPropertyWithConverter(
    * @param value The raw ID value from Elasticsearch
    * @return A TypedValue instance with the correct type information
    */
-  @Suppress("UNCHECKED_CAST", "LongMethod", "CyclomaticComplexMethod")
+  // ThrowsCount: each unsupported value type reports its own conversion failure; detekt 2.x no
+  // longer exempts overridden functions from this rule
+  @Suppress("UNCHECKED_CAST", "LongMethod", "CyclomaticComplexMethod", "ThrowsCount")
   override fun read(value: Any): Any {
     // Check if custom type is registered and validate raw value type BEFORE conversion
     val registration = typedValueClass?.let { customTypeRegistry[it] }

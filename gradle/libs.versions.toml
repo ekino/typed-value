@@ -19,7 +19,7 @@ datafaker = "2.7.0"
 
 # Code quality
 spotless = "8.11.0"
-detekt = "1.23.8"
+detekt = "2.0.0-alpha.6"
 
 # Publishing
 gradle-maven-publish-plugin = "0.37.0"
@@ -97,7 +97,7 @@ kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
 node-gradle = { id = "com.github.node-gradle.node", version.ref = "node-gradle" }
 gradle-maven-publish-plugin = { id = "com.vanniktech.maven.publish", version.ref = "gradle-maven-publish-plugin" }
 

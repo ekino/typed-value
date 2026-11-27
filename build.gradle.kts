@@ -74,7 +74,7 @@ subprojects {
 
   // Skip detekt for modules without Kotlin/Java sources
   if (name !in noSourceModules) {
-    apply(plugin = "io.gitlab.arturbosch.detekt")
+    apply(plugin = "dev.detekt")
   }
 
   if (name !in noSourceModules) {
@@ -113,13 +113,15 @@ subprojects {
   }
 
   if (name !in noSourceModules) {
-    configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
+    configure<dev.detekt.gradle.extensions.DetektExtension> {
       buildUponDefaultConfig = true
       allRules = false
+      // Replaces detekt 1.x `build.maxIssues: 0`: a finding of any severity fails the build
+      failOnSeverity = dev.detekt.gradle.extensions.FailOnSeverity.Info
       config.setFrom(files("$rootDir/detekt.yml"))
     }
-    // Pin detekt's JVM target so analysis works regardless of the JDK running Gradle
-    tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach { jvmTarget = "21" }
+    // Analyse against the same JVM target as the compiled code, whatever JDK runs Gradle
+    tasks.withType<dev.detekt.gradle.Detekt>().configureEach { jvmTarget = "21" }
   }
 
   // JVM-specific configuration (exclude multiplatform and integration tests)
